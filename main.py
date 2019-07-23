@@ -50,45 +50,103 @@
 # #       Importar Librerías        # #
 #######################################
 import time  # Importamos la libreria time --> time.sleep
-import os  # Importamos la libreria para comandos de la consola/shell
 import random  # Genera números aleatorios --> random.randrange(1,100)
-# import nombre_libreria as nuevo_nombre_libreria
 
 import functions as func
-from Models.BME280 import BME280
+#from Models.Sensors.BME280 import BME280
+from sqlalchemy import create_engine, Table, Column, Integer, String, \
+    MetaData, DateTime, Numeric
+
+## Cargo archivos de configuración desde .env
+from dotenv import load_dotenv
+load_dotenv(override=True)
+import os
 
 #######################################
 # #             Variables           # #
 #######################################
 sleep = time.sleep
 
+## Datos desde .env
+DB_CONNECTION = os.getenv("DB_CONNECTION")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_DATABASE = os.getenv("DB_DATABASE")
+DB_USERNAME = os.getenv("DB_USERNAME")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
+## Conexión a la base de datos
+engine = create_engine(DB_CONNECTION +'://' + DB_USERNAME +
+                       ':' + DB_PASSWORD + '@' + DB_HOST + ':' + DB_PORT
+                       + '/' + DB_DATABASE)
+meta = MetaData()
+cn = engine.connect()
+
+## Creo tablas
+humidity = Table(
+   'meteorology_humidity', meta,
+   Column('id', Numeric(11), primary_key=True),
+   Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
+   Column('created_at', DateTime),
+)
+
+pressure = Table(
+   'meteorology_pressure', meta,
+   Column('id', Numeric(11), primary_key=True),
+   Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
+   Column('created_at', DateTime),
+)
+
+temperature = Table(
+   'meteorology_temperature', meta,
+   Column('id', Numeric(11), primary_key=True),
+   Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
+   Column('created_at', DateTime),
+)
+
+meta.create_all(engine)
+
+## Muestro tablas existentes
+print(engine.table_names())
+
+## Inserto Datos
+#stmt = humidity.insert().values(data='newdata').return_defaults()
+#result = connection.execute(stmt)
+#server_created_at = result.returned_defaults['created_at']
+
+
+
 #######################################
 # #             Funciones           # #
 #######################################
 
-def storageDB():
+
+def storageDB(datos):
     '''
         Almacena el array de datos tomados por los sensores en la base de datos.
     '''
 
-    pass
+    print(datos)
+
 
 def main():
     ## Instancio todas las clases
-    bme280 = BME280()
+    #bme280 = BME280()
 
     ## Leo todos los sensores
-    temperature, pressure, humidity = bme280.readBME280All()
-    raspberryTempCPU = func.rpi_cpu_temp()
+    #temperature, pressure, humidity = bme280.readBME280All()
+    #raspberryTempCPU = func.rpi_cpu_temp()
+    temperature, pressure, humidity = [10, 20, 30]
 
-    datos = (
-        'temperature' = temperature,
-        'pressure' = pressure,
-        'humidity' = humidity,
-    )
+    datos = {
+        'temperature': temperature,
+        'pressure': pressure,
+        'humidity': humidity,
+    }
 
     ## Almaceno los datos en la DB
     storageDB(datos)
+
 
 if __name__ == "__main__":
     main()

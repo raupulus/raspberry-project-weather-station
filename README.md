@@ -2,6 +2,10 @@
 
 Proyecto de estación meteorológica con Raspberry Pi
 
+Este proyecto se describe para la distribución Raspbian stable, con otros 
+sistemas operativos o distribuciones pueden variar dependencias y tal vez
+el código.
+
 ## Hardware 
 
 El hardware con el que ha sido utilizado y probado, esto no descarta funcionar
@@ -14,6 +18,8 @@ en otro tipo de hardware similar o con pequeñas modificaciones.
 ## Software
 
 - python 3.7
+- sqlalchemy para python 3
+- python3-dotenv
 
 ## Models
 
@@ -32,6 +38,8 @@ git clone https://gitlab.com/fryntiz/raspberry-weather-station.git
 
 
 ### Instalar dependencias
+
+sudo apt install python3-dotenv python3-sqlalchemy
 
 ### Dar permisos y propietario
 

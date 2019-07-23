@@ -7,7 +7,7 @@
 #
 # --------------------------------------
 
-from Models.BME280 import BME280
+from Models.Sensors.BME280 import BME280
 
 def main ():
     bme280 = BME280()
