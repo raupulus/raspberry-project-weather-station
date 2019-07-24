@@ -57,6 +57,9 @@ import functions as func
 
 ## Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
+
+from Models.Sensors.BME280 import BME280
+
 load_dotenv(override=True)
 
 ## Importo el modelo que interactua con la base de datos.
@@ -68,32 +71,92 @@ from Models.Dbconnection import Dbconnection
 #######################################
 sleep = time.sleep
 
+## Instancio clase por cada sensor
+bme280 = BME280()
 
 #######################################
 # #             Funciones           # #
 #######################################
 
 
+def readSensors():
+    '''
+    Lee todos los sensores y lo devuelve como diccionario.
+    :return:
+    '''
+
+    # BME280 - Temperatura, presión y humedad.
+    temperature, pressure, humidity = bme280.readBME280All()
+
+    '''
+    temperature, pressure, humidity = [
+        random.randrange(15, 38),
+        random.randrange(800, 1200),
+        random.randrange(30, 80)
+    ]
+    '''
+
+    # Raspberry temperatura
+    # rasp_cpu_temp = func.rpi_cpu_temp()
+
+    return {
+        'temperature': temperature,
+        'pressure': pressure,
+        'humidity': humidity,
+        #'rasp_cpu_temp': rasp_cpu_temp,
+    }
+
+def saveData(dbconnection, lecturas):
+    '''
+    Almacena los datos de los sensores en la base de datos.
+    :param dbconnection:
+    :param lecturas:
+    :return:
+    '''
+
+    dbconnection.saveHumidity({'value': lecturas.get('temperature')})
+    dbconnection.savePressure({'value': lecturas.get('pressure')})
+    dbconnection.saveTemperature({'value': lecturas.get('humidity')})
+
+
+def dataToApi():
+    '''
+    Sube todos los datos locales a la API en el VPS externo.
+    :return:
+    '''
+
+    # leer datos desde select
+    # subirlos a la api
+    # borrarlos de la db local
+
+    print('.......................')
+    print('Subiendo datos a la API')
+    print('.......................')
+
+    pass
+
+
 ## TODO → Esta función quedará en bucle tomando datos cada 30 segundos.
 def main():
-    ## Abro conexión con la base de datos.
+    # Abro conexión con la base de datos.
     dbconnection = Dbconnection()
 
-    ## Instancio todas las clases
-    ## TODO → Refactorizar de forma que la toma de datos y guardado se pueda
-    ## repetir para un sensor concreto si este falla al tomar dato o guardar.
-    #bme280 = BME280()
+    # Leo los sensores y los almaceno TODO → Agregar try catch
+    for pos in range(10000):
+        lecturas = readSensors()
 
-    ## Leo todos los sensores
-    #temperature, pressure, humidity = bme280.readBME280All()
-    #raspberryTempCPU = func.rpi_cpu_temp()
-    temperature, pressure, humidity = [99, 88, 77]
+        if lecturas is not None:
+            saveData(dbconnection, lecturas)
 
-    ## Almaceno los datos en la DB
-    ## TODO → Comprobar si guardado falla para retomar medición
-    dbconnection.saveHumidity({'value': temperature});
-    dbconnection.savePressure({'value': pressure});
-    dbconnection.saveTemperature({'value': humidity});
+        # TODO → Controlar por tiempo (unos 5 min) en vez de posición
+        if pos == 9999:
+            dataToApi()
+
+        sleep(10)
+
+    dbconnection.closeConnection()
+
+    exit(0)
 
 
 if __name__ == "__main__":

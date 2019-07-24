@@ -116,7 +116,7 @@ class Dbconnection:
             Almacena el array de datos tomados por los sensores en la base de datos.
         '''
 
-        print('Guardando:', datos)
+        print('Guardando: ',table, datos)
 
         ## Inserto Datos
         stmt = table.insert().values(datos).return_defaults()
@@ -136,8 +136,8 @@ class Dbconnection:
 
     def getAllData(self):
         '''
-            Obtiene todos los datos de la base de datos para organizarlos
-            y devolverlos.
+        Obtiene todos los datos de la base de datos para organizarlos
+        y devolverlos.
         :return:
         '''
 
@@ -149,3 +149,7 @@ class Dbconnection:
 
     def deleteAll(self):
         pass
+
+    def closeConnection(self):
+        print('Cerrando conexión con la Base de Datos')
+        self.connection.close()

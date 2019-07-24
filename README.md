@@ -20,6 +20,7 @@ en otro tipo de hardware similar o con pequeñas modificaciones.
 - python 3.7
 - sqlalchemy para python 3
 - python3-dotenv
+- python3-smbus
 - postgresql
 
 ## Models
@@ -40,7 +41,7 @@ git clone https://gitlab.com/fryntiz/raspberry-weather-station.git
 
 ### Instalar dependencias
 
-sudo apt install python3-dotenv python3-sql python3-sqlalchemy python3-psycopg2
+sudo apt install python3-dotenv python3-sql python3-sqlalchemy python3-psycopg2 python3-smbus
 
 ### Dar permisos y propietario
 
