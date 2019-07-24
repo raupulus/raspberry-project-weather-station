@@ -51,7 +51,7 @@
 
 import datetime
 from sqlalchemy import create_engine, Table, Column, Integer, String, \
-    MetaData, DateTime, Numeric
+    MetaData, DateTime, Numeric, select
 
 ## Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
@@ -66,8 +66,7 @@ import os
 # #             Funciones           # #
 #######################################
 
-## TODO → Abrir aquí la conexión con la base de datos y almacenar dentro
-## las tablas en las que guardar cada sensor.
+
 class Dbconnection:
     ## Datos desde .env
     DB_CONNECTION = os.getenv("DB_CONNECTION")
@@ -77,14 +76,14 @@ class Dbconnection:
     DB_USERNAME = os.getenv("DB_USERNAME")
     DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-    ## Conexión a la base de datos
+    # Conexión a la base de datos
     engine = create_engine(DB_CONNECTION + '://' + DB_USERNAME +
                            ':' + DB_PASSWORD + '@' + DB_HOST + ':' + DB_PORT
                            + '/' + DB_DATABASE)
     meta = MetaData()
     connection = engine.connect()
 
-    ## Creo tablas
+    # Creo tablas
     table_humidity = Table(
         'meteorology_humidity', meta,
         Column('id', Integer, primary_key=True, autoincrement=True),
@@ -116,7 +115,7 @@ class Dbconnection:
             Almacena el array de datos tomados por los sensores en la base de datos.
         '''
 
-        print('Guardando: ',table, datos)
+        print('Guardando: ', table, datos)
 
         ## Inserto Datos
         stmt = table.insert().values(datos).return_defaults()
@@ -128,11 +127,35 @@ class Dbconnection:
     def saveHumidity(self, datos):
         return self.storageDB(self.table_humidity, datos)
 
+    def getHumidity(self):
+        return self.connection.execute(
+            select([
+                self.table_humidity.columns.value,
+                self.table_humidity.columns.created_at,
+            ])
+        )
+
     def savePressure(self, datos):
         return self.storageDB(self.table_pressure, datos)
 
+    def getPressure(self):
+        return self.connection.execute(
+            select([
+                self.table_pressure.columns.value,
+                self.table_pressure.columns.created_at,
+            ])
+        )
+
     def saveTemperature(self, datos):
         return self.storageDB(self.table_temperature, datos)
+
+    def getTemperature(self):
+        return self.connection.execute(
+            select([
+                self.table_temperature.columns.value,
+                self.table_temperature.columns.created_at,
+            ])
+        )
 
     def getAllData(self):
         '''
@@ -142,9 +165,9 @@ class Dbconnection:
         '''
 
         return {
-            'humidity': '',
-            'pressure': '',
-            'temperature': '',
+            'humidity': self.getHumidity(),
+            'pressure': self.getPressure(),
+            'temperature': self.getTemperature(),
         }
 
     def deleteAll(self):

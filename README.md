@@ -30,8 +30,9 @@ temperatura, humedad y presión.
 
 ## Instalación
 
-### Crear base de datos sensor_data
+### Crear usuario y base de datos sensor_data
 
+sudo -u postgres createuser pi
 sudo -u postgres createdb -O pi -T template1 sensor_data
 
 ### Clonar repositorio
