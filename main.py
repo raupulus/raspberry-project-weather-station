@@ -50,6 +50,7 @@
 # #       Importar Librerías        # #
 #######################################
 import time  # Importamos la libreria time --> time.sleep
+import datetime
 import random  # Genera números aleatorios --> random.randrange(1,100)
 
 import functions as func
@@ -80,28 +81,28 @@ engine = create_engine(DB_CONNECTION +'://' + DB_USERNAME +
                        ':' + DB_PASSWORD + '@' + DB_HOST + ':' + DB_PORT
                        + '/' + DB_DATABASE)
 meta = MetaData()
-cn = engine.connect()
+connection = engine.connect()
 
 ## Creo tablas
-humidity = Table(
+table_humidity = Table(
    'meteorology_humidity', meta,
-   Column('id', Numeric(11), primary_key=True),
+   Column('id', Integer, primary_key=True, autoincrement=True),
    Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-   Column('created_at', DateTime),
+   Column('created_at', DateTime, default=datetime.datetime.utcnow),
 )
 
-pressure = Table(
+table_pressure = Table(
    'meteorology_pressure', meta,
-   Column('id', Numeric(11), primary_key=True),
+   Column('id', Integer, primary_key=True, autoincrement=True),
    Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-   Column('created_at', DateTime),
+   Column('created_at', DateTime, default=datetime.datetime.utcnow),
 )
 
-temperature = Table(
+table_temperature = Table(
    'meteorology_temperature', meta,
-   Column('id', Numeric(11), primary_key=True),
+   Column('id', Integer, primary_key=True, autoincrement=True),
    Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-   Column('created_at', DateTime),
+   Column('created_at', DateTime, default=datetime.datetime.utcnow),
 )
 
 meta.create_all(engine)
@@ -109,28 +110,31 @@ meta.create_all(engine)
 ## Muestro tablas existentes
 print(engine.table_names())
 
-## Inserto Datos
-#stmt = humidity.insert().values(data='newdata').return_defaults()
-#result = connection.execute(stmt)
-#server_created_at = result.returned_defaults['created_at']
-
-
-
 #######################################
 # #             Funciones           # #
 #######################################
 
 
-def storageDB(datos):
+def storageDB(table, dato):
     '''
         Almacena el array de datos tomados por los sensores en la base de datos.
     '''
 
-    print(datos)
+    print(dato)
+
+    ## Inserto Datos
+    stmt = table.insert().values(value=dato).return_defaults()
+    result = connection.execute(stmt)
+    # server_created_at = result.returned_defaults['created_at']
+
+    return result
 
 
+## TODO → Esta función quedará en bucle tomando datos cada 30 segundos.
 def main():
     ## Instancio todas las clases
+    ## TODO → Refactorizar de forma que la toma de datos y guardado se pueda
+    ## repetir para un sensor concreto si este falla al tomar dato o guardar.
     #bme280 = BME280()
 
     ## Leo todos los sensores
@@ -138,14 +142,11 @@ def main():
     #raspberryTempCPU = func.rpi_cpu_temp()
     temperature, pressure, humidity = [10, 20, 30]
 
-    datos = {
-        'temperature': temperature,
-        'pressure': pressure,
-        'humidity': humidity,
-    }
-
     ## Almaceno los datos en la DB
-    storageDB(datos)
+    ## TODO → Comprobar si guardado falla para retomar medición
+    storageDB(table_temperature, temperature)
+    storageDB(table_pressure, pressure)
+    storageDB(table_humidity, humidity)
 
 
 if __name__ == "__main__":

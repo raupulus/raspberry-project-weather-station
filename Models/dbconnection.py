@@ -57,5 +57,7 @@
 # #             Funciones           # #
 #######################################
 
+## TODO → Abrir aquí la conexión con la base de datos y almacenar dentro
+## las tablas en las que guardar cada sensor.
 class Dbconnection:
     pass
