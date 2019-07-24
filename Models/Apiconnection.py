@@ -93,9 +93,11 @@ class Apiconnection:
             'Authorization': 'Bearer ' + str(token),
         }
 
-        r = requests.post(full_url, data=json.dumps(data), headers=headers)
+        req = requests.post(full_url, data=json.dumps(data), headers=headers,
+                            timeout=5)
 
-        print('Código de envío: ', r.status_code)
+        print('Código de envío: ', req.status_code)
+        print('Recibido: ', req.text)
 
 
 
@@ -113,7 +115,7 @@ class Apiconnection:
     def upload_humidity(self, datas):
         print('Subiendo humidity')
         datas_json = self.parseToJson(datas)
-        self.send('/ws/humidity/json-upload', datas_json)
+        self.send('/ws/humidity/add-json', datas_json)
 
     def upload_pressure(self, datas):
         print('Subiendo pressure')
