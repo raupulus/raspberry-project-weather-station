@@ -59,7 +59,7 @@ import functions as func
 ## Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
 
-#from Models.Sensors.BME280 import BME280
+from Models.Sensors.BME280 import BME280
 
 load_dotenv(override=True)
 
@@ -74,7 +74,7 @@ from Models.Apiconnection import Apiconnection
 sleep = time.sleep
 
 ## Instancio clase por cada sensor
-#bme280 = BME280()
+bme280 = BME280()
 
 #######################################
 # #             Funciones           # #
@@ -88,15 +88,19 @@ def readSensors():
     '''
 
     # BME280 - Temperatura, presión y humedad.
-    #temperature, pressure, humidity = bme280.readBME280All()
+    temperature, pressure, humidity = bme280.readBME280All()
+
+    '''
+    # Datos para probar sin usar sensores
     temperature, pressure, humidity = [
         random.randrange(15, 38),
         random.randrange(800, 1200),
         random.randrange(30, 80)
     ]
+    '''
 
-    # Raspberry temperatura
-    # rasp_cpu_temp = func.rpi_cpu_temp()
+    # Raspberry temperatura de la CPU
+    #rasp_cpu_temp = func.rpi_cpu_temp()
 
     return {
         'temperature': temperature,
