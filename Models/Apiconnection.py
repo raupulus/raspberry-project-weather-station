@@ -109,18 +109,24 @@ class Apiconnection:
                     'created_at': str(d.created_at)
                 } for d in datas
             ],
-            default=None
+            default=None,
+            ensure_ascii=False,
+            sort_keys=True,
+            indent=4,
         )
 
     def upload_humidity(self, datas):
         print('Subiendo humidity')
         datas_json = self.parseToJson(datas)
+        print(datas_json)
         self.send('/ws/humidity/add-json', datas_json)
 
     def upload_pressure(self, datas):
         print('Subiendo pressure')
         datas_json = self.parseToJson(datas)
+        self.send('/ws/humidity/add-json', datas_json)
 
     def upload_temperature(self, datas):
         print('Subiendo temperature')
         datas_json = self.parseToJson(datas)
+        self.send('/ws/humidity/add-json', datas_json)
