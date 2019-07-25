@@ -145,37 +145,49 @@ def dataToApi(apiconnection, data):
 def main():
     # Abro conexión con la base de datos.
     dbconnection = Dbconnection()
-    apiconnection = Apiconnection()
 
     # Parámetros para acceder a la API
-    api = ''
+    apiconnection = Apiconnection()
 
-    marca_inicio = datetime.datetime.now(tz=None)
+
 
     # Leo los sensores y los almaceno TODO → Agregar try catch
-    for pos in range(10):
-        print('Lectura de sensor nº ' + str(pos))
+    n_lecturas = 0
+    while True:
+    #for pos in range(10):
+        n_lecturas = n_lecturas + 1
+
+        # Guardo el momento que inicia lectura
+        marca_inicio = datetime.datetime.now(tz=None)
+
+        print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
+
         lecturas = readSensors()
 
         if lecturas is not None:
             saveData(dbconnection, lecturas)
 
         # TODO → Controlar por tiempo (unos 5 min) en vez de posición
-        if pos == 9:
+        if n_lecturas == 9:
+            n_lecturas = 0
             dataToApi(apiconnection, dbconnection.getAllData())
-            dbconnection.truncate_all_sensors_data()
+            try:
+                dbconnection.truncate_all_sensors_data()
+            except():
+                print('Error al subir datos a la api')
 
-        #sleep(10)
+        # Muestro tiempo en realizarse la lectura de datos.
+        print('Inicio: ', str(marca_inicio))
+        marca_fin = datetime.datetime.now(tz=None)
+        print('Fin: ', str(marca_fin))
+
+        tiempo_ejecucion = marca_fin - marca_inicio
+        print('Tiempo de ejecución: ', str(tiempo_ejecucion))
+
+        # Pausa entre cada lectura
+        sleep(10)
 
     dbconnection.closeConnection()
-
-    print('Inicio: ', str(marca_inicio))
-    marca_fin = datetime.datetime.now(tz=None)
-    print('Fin: ', str(marca_fin))
-
-    tiempo_ejecucion = marca_fin - marca_inicio
-    print('Tiempo de ejecución: ', str(tiempo_ejecucion))
-
 
     exit(0)
 

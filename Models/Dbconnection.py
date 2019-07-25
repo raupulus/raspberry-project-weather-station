@@ -178,6 +178,7 @@ class Dbconnection:
         print('Vaciando tabla temperature')
         self.truncate_table(self.table_temperature)
 
+    # TODO → Limitar obtenidos, ¿500? comprobar cuanto puede subir por JSON bien
     def getAllData(self):
         '''
         Obtiene todos los datos de la base de datos para organizarlos

@@ -93,7 +93,7 @@ class Apiconnection:
         }
 
         req = requests.post(full_url, data=json.dumps(data), headers=headers,
-                            timeout=5)
+                            timeout=30)
 
         print('Código de envío: ', req.status_code)
         print('Recibido: ', req.text)
