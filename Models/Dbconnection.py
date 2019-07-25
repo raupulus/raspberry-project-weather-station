@@ -135,6 +135,13 @@ class Dbconnection:
             ])
         )
 
+    def truncate_humidity(self):
+        '''
+        Elimina todos los registros en la tabla humidity
+        '''
+        print('Vaciando tabla humidity')
+        self.truncate_table(self.table_humidity)
+
     def savePressure(self, datos):
         return self.storageDB(self.table_pressure, datos)
 
@@ -145,6 +152,13 @@ class Dbconnection:
                 self.table_pressure.columns.created_at,
             ])
         )
+
+    def truncate_pressure(self):
+        '''
+        Elimina todos los registros en la tabla pressure
+        '''
+        print('Vaciando tabla pressure')
+        self.truncate_table(self.table_pressure)
 
     def saveTemperature(self, datos):
         return self.storageDB(self.table_temperature, datos)
@@ -157,11 +171,17 @@ class Dbconnection:
             ])
         )
 
+    def truncate_temperature(self):
+        '''
+        Elimina todos los registros en la tabla humidity
+        '''
+        print('Vaciando tabla temperature')
+        self.truncate_table(self.table_temperature)
+
     def getAllData(self):
         '''
         Obtiene todos los datos de la base de datos para organizarlos
         y devolverlos.
-        :return:
         '''
 
         return {
@@ -170,8 +190,22 @@ class Dbconnection:
             'temperature': self.getTemperature(),
         }
 
-    def deleteAll(self):
-        pass
+    def truncate_all_sensors_data(self):
+        self.truncate_humidity()
+        self.truncate_pressure()
+        self.truncate_temperature()
+
+    def truncate_db(self):
+        con = self.connection
+        trans = con.begin()
+        con.execute('SET FOREIGN_KEY_CHECKS = 0;')
+        for table in self.meta.sorted_tables:
+            con.execute(table.delete())
+        con.execute('SET FOREIGN_KEY_CHECKS = 1;')
+        trans.commit()
+
+    def truncate_table(self, table):
+        self.connection.execute(table.delete())
 
     def closeConnection(self):
         print('Cerrando conexión con la Base de Datos')

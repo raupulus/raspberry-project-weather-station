@@ -141,7 +141,7 @@ def dataToApi(apiconnection, data):
     apiconnection.upload_temperature(temperature)
 
 
-## TODO → Esta función quedará en bucle tomando datos cada 30 segundos.
+## TODO → Esta función quedará en bucle tomando datos cada 10 o 30 segundos.
 def main():
     # Abro conexión con la base de datos.
     dbconnection = Dbconnection()
@@ -163,6 +163,7 @@ def main():
         # TODO → Controlar por tiempo (unos 5 min) en vez de posición
         if pos == 9:
             dataToApi(apiconnection, dbconnection.getAllData())
+            dbconnection.truncate_all_sensors_data()
 
         #sleep(10)
 
