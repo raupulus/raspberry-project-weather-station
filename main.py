@@ -195,7 +195,7 @@ def main():
         print('Tiempo de ejecución: ', str(tiempo_ejecucion))
 
         # Pausa entre cada lectura
-        sleep(1)
+        sleep(20)
 
     dbconnection.closeConnection()
 
