@@ -116,19 +116,19 @@ class Apiconnection:
         if datas:
             print('Subiendo humidity')
             datas_json = self.parseToJson(datas)
-            print(datas_json)
+            #print(datas_json)
             self.send('/ws/humidity/add-json', datas_json)
 
     def upload_pressure(self, datas):
         if datas:
             print('Subiendo pressure')
             datas_json = self.parseToJson(datas)
-            print(datas_json)
+            #print(datas_json)
             self.send('/ws/pressure/add-json', datas_json)
 
     def upload_temperature(self, datas):
         if datas:
             print('Subiendo temperature')
             datas_json = self.parseToJson(datas)
-            print(datas_json)
+            #print(datas_json)
             self.send('/ws/temperature/add-json', datas_json)
