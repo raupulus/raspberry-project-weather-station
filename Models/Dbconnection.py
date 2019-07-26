@@ -110,30 +110,42 @@ class Dbconnection:
     ## Muestro tablas existentes
     print('Tablas en la DB: ', engine.table_names())
 
-    def storageDB (self, table, datos):
-        '''
+    def storageDB(self, table, datos):
+        """
             Almacena el array de datos tomados por los sensores en la base de datos.
-        '''
+        """
 
         print('Guardando: ', table, datos)
 
         ## Inserto Datos
-        stmt = table.insert().values(datos).return_defaults()
-        result = self.connection.execute(stmt)
-        # server_created_at = result.returned_defaults['created_at']
+        try:
+            stmt = table.insert().values(datos).return_defaults()
+            result = self.connection.execute(stmt)
+            # server_created_at = result.returned_defaults['created_at']
+        except Exception:
+            print('Ha ocurrido un problema al insertar datos', Exception)
+            return None
 
         return result
+
+    def getTable(self, table):
+        """
+        Recibe el modelo de la tabla y trae todas las entradas que contenga.
+        :param table Modelo de tabla:
+        :return Devuelve el resultado de la consulta:
+        """
+        return self.connection.execute(
+            select([
+                table.columns.value,
+                table.columns.created_at,
+            ])
+        )
 
     def saveHumidity(self, datos):
         return self.storageDB(self.table_humidity, datos)
 
     def getHumidity(self):
-        return self.connection.execute(
-            select([
-                self.table_humidity.columns.value,
-                self.table_humidity.columns.created_at,
-            ])
-        )
+        return self.getTable(self.table_humidity)
 
     def truncate_humidity(self):
         '''
@@ -146,12 +158,7 @@ class Dbconnection:
         return self.storageDB(self.table_pressure, datos)
 
     def getPressure(self):
-        return self.connection.execute(
-            select([
-                self.table_pressure.columns.value,
-                self.table_pressure.columns.created_at,
-            ])
-        )
+        return self.getTable(self.table_pressure)
 
     def truncate_pressure(self):
         '''
@@ -164,12 +171,7 @@ class Dbconnection:
         return self.storageDB(self.table_temperature, datos)
 
     def getTemperature(self):
-        return self.connection.execute(
-            select([
-                self.table_temperature.columns.value,
-                self.table_temperature.columns.created_at,
-            ])
-        )
+        return self.getTable(self.table_temperature)
 
     def truncate_temperature(self):
         '''

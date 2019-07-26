@@ -98,8 +98,6 @@ class Apiconnection:
         print('Código de envío: ', req.status_code)
         print('Recibido: ', req.text)
 
-
-
     def parseToJson(self, datas):
         return json.dumps(
             [
@@ -115,16 +113,22 @@ class Apiconnection:
         )
 
     def upload_humidity(self, datas):
-        print('Subiendo humidity')
-        datas_json = self.parseToJson(datas)
-        self.send('/ws/humidity/add-json', datas_json)
+        if datas:
+            print('Subiendo humidity')
+            datas_json = self.parseToJson(datas)
+            print(datas_json)
+            self.send('/ws/humidity/add-json', datas_json)
 
     def upload_pressure(self, datas):
-        print('Subiendo pressure')
-        datas_json = self.parseToJson(datas)
-        self.send('/ws/pressure/add-json', datas_json)
+        if datas:
+            print('Subiendo pressure')
+            datas_json = self.parseToJson(datas)
+            print(datas_json)
+            self.send('/ws/pressure/add-json', datas_json)
 
     def upload_temperature(self, datas):
-        print('Subiendo temperature')
-        datas_json = self.parseToJson(datas)
-        self.send('/ws/temperature/add-json', datas_json)
+        if datas:
+            print('Subiendo temperature')
+            datas_json = self.parseToJson(datas)
+            print(datas_json)
+            self.send('/ws/temperature/add-json', datas_json)

@@ -52,21 +52,18 @@
 import time  # Importamos la libreria time --> time.sleep
 import datetime
 import random  # Genera números aleatorios --> random.randrange(1,100)
-
 import functions as func
-#from Models.Sensors.BME280 import BME280
-
-## Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
 
-from Models.Sensors.BME280 import BME280
-
+## Cargo archivos de configuración desde .env sobreescribiendo variables locales.
 load_dotenv(override=True)
 
-## Importo el modelo que interactua con la base de datos.
+# Importo el modelo que interactua con la base de datos.
 from Models.Dbconnection import Dbconnection
 from Models.Apiconnection import Apiconnection
 
+# Importo modelos para los sensores
+from Models.Sensors.BME280 import BME280
 
 #######################################
 # #             Variables           # #
@@ -81,23 +78,32 @@ bme280 = BME280()
 #######################################
 
 
+def readSensor(sensor_method):
+    try:
+        return sensor_method()
+    except Exception:
+        print('Error al leer sensor')
+        return None
+
+
 def readSensors():
-    '''
+    """
     Lee todos los sensores y lo devuelve como diccionario.
     :return:
-    '''
+    """
 
     # BME280 - Temperatura, presión y humedad.
-    temperature, pressure, humidity = bme280.readBME280All()
+    #temperature, pressure, humidity = bme280.readBME280All()
+    temperature, pressure, humidity = readSensor(bme280.readBME280All)
 
-    '''
     # Datos para probar sin usar sensores
+    """
     temperature, pressure, humidity = [
         random.randrange(15, 38),
         random.randrange(800, 1200),
         random.randrange(30, 80)
     ]
-    '''
+    """
 
     # Raspberry temperatura de la CPU
     #rasp_cpu_temp = func.rpi_cpu_temp()
@@ -110,12 +116,12 @@ def readSensors():
     }
 
 def saveData(dbconnection, lecturas):
-    '''
+    """
     Almacena los datos de los sensores en la base de datos.
     :param dbconnection:
     :param lecturas:
     :return:
-    '''
+    """
 
     dbconnection.saveHumidity({'value': lecturas.get('humidity')})
     dbconnection.savePressure({'value': lecturas.get('pressure')})
@@ -123,10 +129,10 @@ def saveData(dbconnection, lecturas):
 
 
 def dataToApi(apiconnection, data):
-    '''
+    """
     Sube todos los datos locales a la API en el VPS externo.
     :return:
-    '''
+    """
 
     # leer datos desde select
     # subirlos a la api
@@ -158,7 +164,6 @@ def main():
     # Leo los sensores y los almaceno TODO → Agregar try catch
     n_lecturas = 0
     while True:
-    #for pos in range(10):
         n_lecturas = n_lecturas + 1
 
         # Guardo el momento que inicia lectura
@@ -174,8 +179,9 @@ def main():
         # TODO → Controlar por tiempo (unos 5 min) en vez de posición
         if n_lecturas == 9:
             n_lecturas = 0
-            dataToApi(apiconnection, dbconnection.getAllData())
+
             try:
+                dataToApi(apiconnection, dbconnection.getAllData())
                 dbconnection.truncate_all_sensors_data()
             except():
                 print('Error al subir datos a la api')
@@ -189,7 +195,7 @@ def main():
         print('Tiempo de ejecución: ', str(tiempo_ejecucion))
 
         # Pausa entre cada lectura
-        sleep(10)
+        sleep(1)
 
     dbconnection.closeConnection()
 

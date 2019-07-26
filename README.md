@@ -26,6 +26,8 @@ en otro tipo de hardware similar o con pequeñas modificaciones.
 - sqlalchemy para python 3
 - python3-dotenv
 - python3-smbus
+- python3-rpi.gpio
+- python3-pip
 
 ## Models
 
@@ -46,7 +48,13 @@ git clone https://gitlab.com/fryntiz/raspberry-weather-station.git
 
 ### Instalar dependencias
 
-sudo apt install python3-dotenv python3-sql python3-sqlalchemy python3-psycopg2 python3-smbus python3-requests
+sudo apt install python3-dotenv python3-sql python3-sqlalchemy \ 
+    python3-psycopg2 python3-smbus python3-requests python3-rpi.gpio \ 
+    python3-pip 
+    
+#### Dependencias para pantalla oled 128x64 con chip ssd1306    
+
+pip3 install Adafruit_SSD1306 Adafruit_GPIO Pillow
 
 ### Dar permisos y propietario
 
