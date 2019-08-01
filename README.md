@@ -61,3 +61,7 @@ pip3 install Adafruit_SSD1306 Adafruit_GPIO Pillow
 ### Asignar tarea cron para ejecutarse automáticamente al iniciar la raspberry.
 
 @reboot pi sleep 30 && python3 /home/pi/git/Raspberry-Display-Oled-SSD1306/info.py  > /tmp/log-raspberry-weather-station.log
+
+
+
+## Añadir nuevo sensor (añadir pasos para nuevo sensor)

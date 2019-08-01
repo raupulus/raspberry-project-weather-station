@@ -64,6 +64,7 @@ from Models.Apiconnection import Apiconnection
 
 # Importo modelos para los sensores
 from Models.Sensors.BME280 import BME280
+from Models.Sensors.BH1750 import BH1750
 
 #######################################
 # #             Variables           # #
@@ -72,17 +73,18 @@ sleep = time.sleep
 
 ## Instancio clase por cada sensor
 bme280 = BME280()
+bh1750 = BH1750()
 
 #######################################
 # #             Funciones           # #
 #######################################
 
 
-def readSensor(sensor_method):
+def readSensor(sensor_method, sensor_name=''):
     try:
         return sensor_method()
     except Exception:
-        print('Error al leer sensor')
+        print('Error al leer sensor ' + sensor_name)
         return None
 
 
@@ -94,14 +96,18 @@ def readSensors():
 
     # BME280 - Temperatura, presión y humedad.
     #temperature, pressure, humidity = bme280.readBME280All()
-    temperature, pressure, humidity = readSensor(bme280.readBME280All)
+    temperature, pressure, humidity = readSensor(bme280.readBME280All, 'BME280')
+
+    # BH1750 - Sensor de luz en medida lux
+    light = readSensor(bh1750.read_light, 'BH1750')
 
     # Datos para probar sin usar sensores
     """
-    temperature, pressure, humidity = [
+    temperature, pressure, humidity, light = [
         random.randrange(15, 38),
         random.randrange(800, 1200),
-        random.randrange(30, 80)
+        random.randrange(30, 80),
+        random.randrange(4, 100000),
     ]
     """
 
@@ -112,6 +118,7 @@ def readSensors():
         'temperature': temperature,
         'pressure': pressure,
         'humidity': humidity,
+        'light': light,
         #'rasp_cpu_temp': rasp_cpu_temp,
     }
 
@@ -126,6 +133,7 @@ def saveData(dbconnection, lecturas):
     dbconnection.saveHumidity({'value': lecturas.get('humidity')})
     dbconnection.savePressure({'value': lecturas.get('pressure')})
     dbconnection.saveTemperature({'value': lecturas.get('temperature')})
+    dbconnection.saveLight({'value': lecturas.get('light')})
 
 
 def dataToApi(apiconnection, data):
@@ -145,10 +153,12 @@ def dataToApi(apiconnection, data):
     humidity = data.get('humidity')
     pressure = data.get('pressure')
     temperature = data.get('temperature')
+    light = data.get('light')
 
     apiconnection.upload_humidity(humidity)
     apiconnection.upload_pressure(pressure)
     apiconnection.upload_temperature(temperature)
+    apiconnection.upload_temperature(light)
 
 
 ## TODO → Esta función quedará en bucle tomando datos cada 10 o 30 segundos.
@@ -177,7 +187,7 @@ def main():
             saveData(dbconnection, lecturas)
 
         # TODO → Controlar por tiempo (unos 5 min) en vez de posición
-        if n_lecturas == 9:
+        if n_lecturas == 2:
             n_lecturas = 0
 
             try:
@@ -195,7 +205,7 @@ def main():
         print('Tiempo de ejecución: ', str(tiempo_ejecucion))
 
         # Pausa entre cada lectura
-        sleep(20)
+        sleep(40)
 
     dbconnection.closeConnection()
 
