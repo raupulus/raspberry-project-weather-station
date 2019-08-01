@@ -158,7 +158,7 @@ def dataToApi(apiconnection, data):
     apiconnection.upload_humidity(humidity)
     apiconnection.upload_pressure(pressure)
     apiconnection.upload_temperature(temperature)
-    apiconnection.upload_temperature(light)
+    apiconnection.upload_light(light)
 
 
 ## TODO → Esta función quedará en bucle tomando datos cada 10 o 30 segundos.
