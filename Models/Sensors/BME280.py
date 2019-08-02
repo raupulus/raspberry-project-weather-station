@@ -16,6 +16,7 @@ from ctypes import c_short
 # from ctypes import c_ubyte
 
 
+# TODO → Adecuar nombres de métodos a reglas de estilos
 class BME280:
     DEVICE = 0x76  # Default device I2C address
     bus = smbus.SMBus(1)  # Rev 2 Pi, Pi 2, Pi 3, Pi 4 uses bus 1
