@@ -54,6 +54,7 @@ import datetime
 import random  # Genera números aleatorios --> random.randrange(1,100)
 import functions as func
 from dotenv import load_dotenv
+import os
 
 ## Cargo archivos de configuración desde .env sobreescribiendo variables locales.
 load_dotenv(override=True)
@@ -65,15 +66,67 @@ from Models.Apiconnection import Apiconnection
 # Importo modelos para los sensores
 from Models.Sensors.BME280 import BME280
 from Models.Sensors.BH1750 import BH1750
+from Models.Sensors.Anemometer import Anemometer
 
 #######################################
 # #             Variables           # #
 #######################################
 sleep = time.sleep
 
-## Instancio clase por cada sensor
+# Instancio clase por cada sensor
 bme280 = BME280()
 bh1750 = BH1750()
+
+########################### REFACTORIZANDO ##############################
+
+# Diccionario con todos los sensores utilizados (Declarados en .env)
+sensors = {}
+
+# Ejemplo de estructura:
+"""
+{
+    "nombre": {
+        "sensor": Object,
+        "data": Object,
+        
+{
+"""
+
+
+if (os.getenv('S_ANEMOMETER') == 'True') or \
+   (os.getenv('S_ANEMOMETER') == 'true'):
+    sensors['anemometer'] = {
+        'sensor': Anemometer(pin=int(os.getenv('S_ANEMOMETER_PIN'))),
+        'data': None,
+    }
+
+    # Inicio Evento de lectura y cálculo de datos para anemómetro
+    sensors['anemometer']['sensor'].start_read()
+
+
+def read_sensor(method):
+    """
+    Recibe el método para obtener todos los datos del sensor e intenta
+    conseguirlo o en caso contrario anota el error en el registro de logs.
+    :param method: Método a intentar ejecutar.
+    :return: Resultado de lectura para el sensor.
+    """
+    try:
+        return method()
+    except Exception:
+        print('Error al leer sensor ', str(method))
+        return None
+
+
+def read_sensors():
+    """
+    Lee todos los sensores y los añade al diccionario.
+    """
+    for name, params in sensors.items():
+        print('Leyendo sensor: ', name)
+        params['data'] = read_sensor(params['sensor'].get_all_datas)
+
+########################### FIN DEL REFACTORIZADO
 
 #######################################
 # #             Funciones           # #
@@ -101,6 +154,9 @@ def readSensors():
     # BH1750 - Sensor de luz en medida lux
     light = readSensor(bh1750.read_light, 'BH1750')
 
+    # Anemometer - Sensor de velocidad de viento leyendo impulsos, medida en m/s
+    #wind = anemometer.get_all_datas()
+
     # Datos para probar sin usar sensores
     """
     temperature, pressure, humidity, light = [
@@ -119,6 +175,7 @@ def readSensors():
         'pressure': pressure,
         'humidity': humidity,
         'light': light,
+        #'wind': wind,
         #'rasp_cpu_temp': rasp_cpu_temp,
     }
 
@@ -129,6 +186,7 @@ def saveData(dbconnection, lecturas):
     :param lecturas:
     :return:
     """
+
 
     dbconnection.saveHumidity({'value': lecturas.get('humidity')})
     dbconnection.savePressure({'value': lecturas.get('pressure')})
@@ -207,7 +265,10 @@ def main():
         # Pausa entre cada lectura
         sleep(40)
 
+    # Acciones tras terminar con error
+    # TODO → controlar interrupciones y excepciones para limpiar/reiniciar todo.
     dbconnection.closeConnection()
+    anemometer.stop_read()
 
     exit(0)
 

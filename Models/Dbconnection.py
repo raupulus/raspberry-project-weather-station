@@ -51,7 +51,7 @@
 
 import datetime
 from sqlalchemy import create_engine, Table, Column, Integer, String, \
-    MetaData, DateTime, Numeric, select
+                       MetaData, DateTime, Numeric, select
 
 ## Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
@@ -83,6 +83,40 @@ class Dbconnection:
                            + '/' + DB_DATABASE)
     meta = MetaData()
     connection = engine.connect()
+
+
+    ##################### REFACTORIZANDO
+    tables = []
+    def table_set_new(self):
+        """
+        Almacena una nueva tabla en el array de tablas.
+        """
+        pass
+
+    def table_get_data(self, table):
+        """
+        Obtiene los datos de una tabla previamente seteada.
+        :param table: Tabla desde la que obtener datos.
+        """
+        pass
+
+    def table_save_data(self, table, data):
+        """
+        Almacena datos recibidos en la tabla recibida.
+        :param table: Tabla sobre la que insertar datos.
+        :param data: Los datos a introducir.
+        """
+        pass
+
+    def table_truncate(self, table):
+        """
+        Vacia completamente la tabla recibida.
+        :param table:
+        :return:
+        """
+
+    ##################### FIN REFACTORIZADO
+
 
     # Creo tablas
     table_humidity = Table(

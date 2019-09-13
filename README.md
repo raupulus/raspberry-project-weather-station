@@ -14,6 +14,7 @@ en otro tipo de hardware similar o con pequeñas modificaciones.
 - Raspberry PI 4
 - Sensor bosh BME280 (Humedad, presión, temperatura)
 - Sensor bh1750 (Luz)
+- Anemómetro de interruptor por iman, al girar cierra contactos.
 
 ## Software
 
