@@ -86,12 +86,55 @@ class Dbconnection:
 
 
     ##################### REFACTORIZANDO
-    tables = []
-    def table_set_new(self):
+    tables = {}
+
+    def table_set_new(self, tablename, parameters):
         """
         Almacena una nueva tabla en el array de tablas.
+        :param tablename: Nombre de la tabla.
+        :param parameters: Parámetros para cada columna.
         """
-        pass
+        columns = []
+
+        # Seteo la columna **id**
+        columns.append(Column('id', Integer, primary_key=True, autoincrement=True))
+
+        # Seteo el resto de columnas.
+        for name, datas in parameters.items():
+            data_type = datas['type']
+            data_params = datas['params']
+            type_column = None
+            other_data = datas['others']
+
+            ## Creo el campo según el tipo de dato.
+            if data_type == 'Numeric':
+                type_column = Numeric(**data_params)
+            elif data_type == 'DateTime':
+                type_column = DateTime
+            elif data_type == 'Integer':
+                type_column = Integer
+            elif data_type == 'String':
+                type_column = String(**data_params)
+
+            if datas['others']:
+                columns.append(Column(name, type_column, **other_data))
+            else:
+                columns.append(Column(name, type_column))
+
+        # Creo la tabla con las columnas antes seteadas.
+        self.tables[tablename] = Table(
+            tablename,
+            self.meta,
+            *columns,
+        )
+
+
+        self.meta.create_all(self.engine)
+
+        #print(self.tables)
+        #print(self.tables[tablename])
+        print('Tablas en la DB: ', self.engine.table_names())
+        exit(0)
 
     def table_get_data(self, table):
         """
@@ -100,13 +143,14 @@ class Dbconnection:
         """
         pass
 
-    def table_save_data(self, table, data):
+    def table_save_data(self, params):
         """
         Almacena datos recibidos en la tabla recibida.
-        :param table: Tabla sobre la que insertar datos.
-        :param data: Los datos a introducir.
+        :param params: Diccionario con los parámetros del sensor.
         """
-        pass
+
+        for x in self.tables:
+            pass
 
     def table_truncate(self, table):
         """

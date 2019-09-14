@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import datetime
 import time
 
 import RPi.GPIO as GPIO
@@ -238,7 +239,6 @@ class Anemometer():
         print('Cerrando hilo de lectura de datos')
         self.killed = True
 
-
     def tablemodel(self):
         """
         Plantea campos como modelo de datos para una base de datos y poder ser
@@ -246,53 +246,48 @@ class Anemometer():
         """
 
         return {
-            'name': self.table_name,
-            'columns': {
-                'id': {
-                    'type': 'Integer',
-                    'params': {
-                        'primary_key': True,
-                        'autoincrement': True,
-                    }
+            'wind_speed': {
+                'type': 'Numeric',
+                'params': {
+                    'precision': 15,
+                    'asdecimal': True,
+                    'scale': 4
                 },
-                'wind_speed': {
-                    'type': 'Numeric',
-                    'params': {
-                        'precision': 15,
-                        'asdecimal': True,
-                        'scale': 4
-                    }
+                'others': None,
+            },
+            'wind_average': {
+                'type': 'Numeric',
+                'params': {
+                    'precision': 15,
+                    'asdecimal': True,
+                    'scale': 4
                 },
-                'wind_average': {
-                    'type': 'Numeric',
-                    'params': {
-                        'precision': 15,
-                        'asdecimal': True,
-                        'scale': 4
-                    }
+                'others': None,
+            },
+            'wind_min': {
+                'type': 'Numeric',
+                'params': {
+                    'precision': 15,
+                    'asdecimal': True,
+                    'scale': 4
                 },
-                'wind_min': {
-                    'type': 'Numeric',
-                    'params': {
-                        'precision': 15,
-                        'asdecimal': True,
-                        'scale': 4
-                    }
+                'others': None,
+            },
+            'wind_max': {
+                'type': 'Numeric',
+                'params': {
+                    'precision': 15,
+                    'asdecimal': True,
+                    'scale': 4
                 },
-                'wind_max': {
-                    'type': 'Numeric',
-                    'params': {
-                        'precision': 15,
-                        'asdecimal': True,
-                        'scale': 4
-                    }
+                'others': None,
+            },
+            'created_at': {
+                'type': 'DateTime',
+                'params': None,
+                'others': {
+                    'default': datetime.datetime.utcnow
                 },
-                'created_at': {
-                    'type': 'DateTime',
-                    'params': {
-                        'default': 'datetime.datetime.utcnow'
-                    }
-                }
             },
         }
 

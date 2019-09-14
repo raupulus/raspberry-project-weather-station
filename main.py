@@ -73,6 +73,9 @@ from Models.Sensors.Anemometer import Anemometer
 #######################################
 sleep = time.sleep
 
+# Abro conexión con la base de datos instanciando el modelo que la representa.
+dbconnection = Dbconnection()
+
 # Instancio clase por cada sensor
 bme280 = BME280()
 bh1750 = BH1750()
@@ -88,20 +91,26 @@ sensors = {}
     "nombre": {
         "sensor": Object,
         "data": Object,
-        
 {
 """
 
-
+# Compruebo si está habilitado el sensor para instanciarlo
 if (os.getenv('S_ANEMOMETER') == 'True') or \
    (os.getenv('S_ANEMOMETER') == 'true'):
     sensors['anemometer'] = {
         'sensor': Anemometer(pin=int(os.getenv('S_ANEMOMETER_PIN'))),
+        'table': Anemometer.table_name,
         'data': None,
     }
 
-    # Inicio Evento de lectura y cálculo de datos para anemómetro
+    # Inicio Evento de lectura y cálculo de datos para anemómetro.
     sensors['anemometer']['sensor'].start_read()
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['anemometer']['table'],  # Nombre de la tabla.
+        sensors['anemometer']['sensor'].tablemodel()  # Modelo de tabla con sus columnas.
+    )
 
 
 def read_sensor(method):
@@ -126,7 +135,80 @@ def read_sensors():
         print('Leyendo sensor: ', name)
         params['data'] = read_sensor(params['sensor'].get_all_datas)
 
+def save_to_db(dbconnection):
+    """
+    Almacena los datos de los sensores en la base de datos.
+    :param dbconnection:
+    """
+
+    for name, params in sensors.items():
+        print('Guardando en db datos del sensor: ', name)
+
+        dbconnection.table_save_data({
+            'sensor': name,
+            'table': 'nombretabla',
+            'data': params['data'],
+        })
+
+
+def loop():
+    # Parámetros para acceder a la API.
+    #apiconnection = Apiconnection()
+
+    # Leo los sensores y los almaceno
+    n_lecturas = 0
+    while True:
+        n_lecturas = n_lecturas + 1
+
+        # Guardo el momento que inicia lectura.
+        marca_inicio = datetime.datetime.now(tz=None)
+
+        print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
+
+        # Leyendo sensores y almacenándolos en el array **sensors**
+        read_sensors()
+
+        # Almacena en la base de datos.
+        save_to_db(dbconnection)
+
+        # TODO → Controlar por tiempo (unos 5 min) en vez de posición
+        if n_lecturas == 2:
+            n_lecturas = 0
+
+            try:
+                pass
+                #dataToApi(apiconnection, dbconnection.getAllData())
+                #dbconnection.truncate_all_sensors_data()
+            except():
+                print('Error al subir datos a la api')
+
+        # Muestro tiempo en realizarse la lectura de datos.
+        print('Inicio: ', str(marca_inicio))
+        marca_fin = datetime.datetime.now(tz=None)
+        print('Fin: ', str(marca_fin))
+
+        tiempo_ejecucion = marca_fin - marca_inicio
+        print('Tiempo de ejecución: ', str(tiempo_ejecucion))
+
+        # Pausa entre cada lectura
+        sleep(10)
+
+    # Acciones tras terminar con error
+    # TODO → controlar interrupciones y excepciones para limpiar/reiniciar todo.
+    dbconnection.closeConnection()
+    anemometer.stop_read()
+
+    exit(0)
+
+loop()
+exit(0)
+
+
 ########################### FIN DEL REFACTORIZADO
+
+
+
+
 
 #######################################
 # #             Funciones           # #
