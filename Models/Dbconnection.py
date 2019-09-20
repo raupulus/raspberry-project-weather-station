@@ -134,23 +134,36 @@ class Dbconnection:
         #print(self.tables)
         #print(self.tables[tablename])
         print('Tablas en la DB: ', self.engine.table_names())
-        exit(0)
 
-    def table_get_data(self, table):
+    def table_get_data(self, tablename):
         """
         Obtiene los datos de una tabla previamente seteada.
         :param table: Tabla desde la que obtener datos.
         """
+
+        table = self.tables[tablename]
         pass
 
-    def table_save_data(self, params):
+    def table_save_data(self, sensorname, tablename, params):
         """
         Almacena datos recibidos en la tabla recibida.
+        :param tablename: Nombre de la tabla en la que guardar.
         :param params: Diccionario con los parámetros del sensor.
         """
 
-        for x in self.tables:
-            pass
+        table = self.tables[tablename]
+
+        print('Guardando en DB: ', table, params)
+
+        ## Inserto Datos
+        try:
+            stmt = table.insert().values(params).return_defaults()
+            result = self.connection.execute(stmt)
+            exit()
+            # server_created_at = result.returned_defaults['created_at']
+        except Exception:
+            print('Ha ocurrido un problema al insertar datos', Exception)
+            return None
 
     def table_truncate(self, table):
         """
@@ -158,6 +171,7 @@ class Dbconnection:
         :param table:
         :return:
         """
+
 
     ##################### FIN REFACTORIZADO
 
@@ -209,7 +223,7 @@ class Dbconnection:
             result = self.connection.execute(stmt)
             # server_created_at = result.returned_defaults['created_at']
         except Exception:
-            print('Ha ocurrido un problema al insertar datos', Exception)
+            print('Ha ocurrido un problema al insertar datos en:', table)
             return None
 
         return result

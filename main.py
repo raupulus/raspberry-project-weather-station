@@ -135,6 +135,7 @@ def read_sensors():
         print('Leyendo sensor: ', name)
         params['data'] = read_sensor(params['sensor'].get_all_datas)
 
+
 def save_to_db(dbconnection):
     """
     Almacena los datos de los sensores en la base de datos.
@@ -142,13 +143,11 @@ def save_to_db(dbconnection):
     """
 
     for name, params in sensors.items():
-        print('Guardando en db datos del sensor: ', name)
-
-        dbconnection.table_save_data({
-            'sensor': name,
-            'table': 'nombretabla',
-            'data': params['data'],
-        })
+        dbconnection.table_save_data(
+            sensorname=name,
+            tablename=sensors[name]['table'],
+            params=params['data']
+        )
 
 
 def loop():
