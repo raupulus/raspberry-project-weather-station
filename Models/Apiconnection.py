@@ -75,7 +75,7 @@ class Apiconnection:
     API_URL = os.getenv("API_URL")
     API_TOKEN = os.getenv("API_TOKEN")
 
-    def requests_retry_session (
+    def requests_retry_session(
             retries=3,
             backoff_factor=0.3,
             status_forcelist=(500, 502, 504),
@@ -137,44 +137,76 @@ class Apiconnection:
             print('Ha fallado la petición http :', e.__class__.__name__)
             sleep(20)
 
-    def parseToJson(self, datas):
+    def parse_to_json(self, rows, columns):
+        """
+        Convierte los datos recibidos en JSON
+        :param rows: Tuplas con todas las entradas desde la DB.
+        :param columns: Nombre de las columnas en orden respecto a tuplas.
+        :return: Devuelve el objeto json
+        """
+
+        result = []
+
+        # Compongo el objeto json que será devuelto.
+        for row in rows:
+            tupla = {}
+
+            # Por cada tupla creo la pareja de clave: valor
+            for iteracion in range(len(columns)):
+                cell = str(row[iteracion])
+
+                if columns[iteracion] != 'id':
+                    tupla.update({columns[iteracion]: cell})
+
+            result.append(tupla)
+
         return json.dumps(
-            [
-                {
-                    'value': str(d.value),
-                    'created_at': str(d.created_at)
-                } for d in datas
-            ],
+            result,
             default=None,
             ensure_ascii=False,
             sort_keys=True,
             indent=4,
         )
 
+
+    def upload(self, sensorname, path, datas, columns):
+        """
+        Recibe la ruta dentro de la API y los datos a enviar para procesar la
+        subida atacando la API.
+        :param path: Ruta dentro de la api
+        :param datas: Datos a enviar
+        """
+        if datas:
+            print('Subiendo: ' + sensorname + ' a ' + path)
+            datas_json = self.parse_to_json(datas, columns)
+            print('Datos formateados en JSON:', datas_json)
+            self.send(path, datas_json)
+
+############## Sin refactorizar aún
     def upload_humidity(self, datas):
         if datas:
             print('Subiendo humidity')
-            datas_json = self.parseToJson(datas)
+            datas_json = self.parse_to_json(datas)
             #print(datas_json)
             self.send('/ws/humidity/add-json', datas_json)
 
     def upload_pressure(self, datas):
         if datas:
             print('Subiendo pressure')
-            datas_json = self.parseToJson(datas)
+            datas_json = self.parse_to_json(datas)
             #print(datas_json)
             self.send('/ws/pressure/add-json', datas_json)
 
     def upload_temperature(self, datas):
         if datas:
             print('Subiendo temperature')
-            datas_json = self.parseToJson(datas)
+            datas_json = self.parse_to_json(datas)
             #print(datas_json)
             self.send('/ws/temperature/add-json', datas_json)
 
     def upload_light(self, datas):
         if datas:
             print('Subiendo light')
-            datas_json = self.parseToJson(datas)
+            datas_json = self.parse_to_json(datas)
             #print(datas_json)
             self.send('/ws/light/add-json', datas_json)
