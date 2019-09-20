@@ -76,6 +76,9 @@ sleep = time.sleep
 # Abro conexión con la base de datos instanciando el modelo que la representa.
 dbconnection = Dbconnection()
 
+# Parámetros para acceder a la API.
+apiconnection = Apiconnection()
+
 # Instancio clase por cada sensor
 bme280 = BME280()
 bh1750 = BH1750()
@@ -85,22 +88,18 @@ bh1750 = BH1750()
 # Diccionario con todos los sensores utilizados (Declarados en .env)
 sensors = {}
 
-# Ejemplo de estructura:
-"""
-{
-    "nombre": {
-        "sensor": Object,
-        "data": Object,
-{
-"""
-
 # Compruebo si está habilitado el sensor para instanciarlo
 if (os.getenv('S_ANEMOMETER') == 'True') or \
    (os.getenv('S_ANEMOMETER') == 'true'):
+
+    # Establezco la ruta a la API
+    api_path = '/ws/winter/add-json'
+
     sensors['anemometer'] = {
         'sensor': Anemometer(pin=int(os.getenv('S_ANEMOMETER_PIN'))),
         'table': Anemometer.table_name,
         'data': None,
+        'api_path': api_path,
     }
 
     # Inicio Evento de lectura y cálculo de datos para anemómetro.
@@ -149,11 +148,29 @@ def save_to_db(dbconnection):
             params=params['data']
         )
 
+def save_to_api(apiconnection):
+    """
+    Obtiene los datos para cada sensor de la DB y los envía a la API
+    :param apiconnection:
+    :param data_from_db:
+    """
+
+    for name, params in sensors.items():
+        ## Parámetros/tuplas desde la base de datos.
+        params_from_db = dbconnection.table_get_data(params['table'])
+
+        ## Columnas del modelo.
+        columns = dbconnection.tables[params['table']].columns.keys()
+
+        apiconnection.upload(
+            name,
+            params['api_path'],
+            params_from_db,
+            columns,
+        )
+
 
 def loop():
-    # Parámetros para acceder a la API.
-    #apiconnection = Apiconnection()
-
     # Leo los sensores y los almaceno
     n_lecturas = 0
     while True:
@@ -171,12 +188,11 @@ def loop():
         save_to_db(dbconnection)
 
         # TODO → Controlar por tiempo (unos 5 min) en vez de posición
-        if n_lecturas == 2:
+        if n_lecturas == 1:
             n_lecturas = 0
 
             try:
-                pass
-                #dataToApi(apiconnection, dbconnection.getAllData())
+                save_to_api(apiconnection)
                 #dbconnection.truncate_all_sensors_data()
             except():
                 print('Error al subir datos a la api')
