@@ -138,15 +138,20 @@ class Dbconnection:
     def table_get_data(self, tablename):
         """
         Obtiene los datos de una tabla previamente seteada.
-        :param table: Tabla desde la que obtener datos.
+        :param tablename: Nombre de la tabla desde la que obtener datos.
         """
 
         table = self.tables[tablename]
-        pass
+
+        # Ejecuto la consulta para traer las tuplas de la tabla completa
+        return self.connection.execute(
+            select([table])
+        ).fetchall()
 
     def table_save_data(self, sensorname, tablename, params):
         """
         Almacena datos recibidos en la tabla recibida.
+        :param sensorname: Nombre del sensor sobre el que se trabaja.
         :param tablename: Nombre de la tabla en la que guardar.
         :param params: Diccionario con los parámetros del sensor.
         """
@@ -159,7 +164,6 @@ class Dbconnection:
         try:
             stmt = table.insert().values(params).return_defaults()
             result = self.connection.execute(stmt)
-            exit()
             # server_created_at = result.returned_defaults['created_at']
         except Exception:
             print('Ha ocurrido un problema al insertar datos', Exception)
