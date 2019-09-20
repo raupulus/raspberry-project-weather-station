@@ -148,11 +148,11 @@ def save_to_db(dbconnection):
             params=params['data']
         )
 
-def save_to_api(apiconnection):
+def save_to_api(apiconnection, dbconnection):
     """
     Obtiene los datos para cada sensor de la DB y los envía a la API
     :param apiconnection:
-    :param data_from_db:
+    :param dbconnection:
     """
 
     for name, params in sensors.items():
@@ -162,12 +162,19 @@ def save_to_api(apiconnection):
         ## Columnas del modelo.
         columns = dbconnection.tables[params['table']].columns.keys()
 
-        apiconnection.upload(
-            name,
-            params['api_path'],
-            params_from_db,
-            columns,
-        )
+        try:
+            response = apiconnection.upload(
+                name,
+                params['api_path'],
+                params_from_db,
+                columns,
+            )
+
+            # Limpio los datos de la tabla si se ha subido correctamente.
+            if response:
+                dbconnection.table_truncate(params['table'])
+        except():
+            print('Error al subir a la api: ', name)
 
 
 def loop():
@@ -176,10 +183,11 @@ def loop():
     while True:
         n_lecturas = n_lecturas + 1
 
+        print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
+
+
         # Guardo el momento que inicia lectura.
         marca_inicio = datetime.datetime.now(tz=None)
-
-        print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
 
         # Leyendo sensores y almacenándolos en el array **sensors**
         read_sensors()
@@ -192,8 +200,7 @@ def loop():
             n_lecturas = 0
 
             try:
-                save_to_api(apiconnection)
-                #dbconnection.truncate_all_sensors_data()
+                save_to_api(apiconnection, dbconnection)
             except():
                 print('Error al subir datos a la api')
 

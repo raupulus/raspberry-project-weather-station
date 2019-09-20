@@ -169,13 +169,12 @@ class Dbconnection:
             print('Ha ocurrido un problema al insertar datos', Exception)
             return None
 
-    def table_truncate(self, table):
+    def table_truncate(self, tablename):
         """
         Vacia completamente la tabla recibida.
-        :param table:
-        :return:
+        :param tablename: Nombre de la tabla.
         """
-
+        self.connection.execute(self.tables[tablename].delete())
 
     ##################### FIN REFACTORIZADO
 
