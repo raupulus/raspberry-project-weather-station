@@ -214,10 +214,3 @@ class Apiconnection:
             datas_json = self.parse_to_json(datas)
             #print(datas_json)
             self.send('/ws/temperature/add-json', datas_json)
-
-    def upload_light(self, datas):
-        if datas:
-            print('Subiendo light')
-            datas_json = self.parse_to_json(datas)
-            #print(datas_json)
-            self.send('/ws/light/add-json', datas_json)

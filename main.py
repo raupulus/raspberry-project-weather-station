@@ -81,7 +81,7 @@ apiconnection = Apiconnection()
 
 # Instancio clase por cada sensor
 bme280 = BME280()
-bh1750 = BH1750()
+#bh1750 = BH1750()
 
 ########################### REFACTORIZANDO ##############################
 
@@ -109,6 +109,24 @@ if (os.getenv('S_ANEMOMETER') == 'True') or \
     dbconnection.table_set_new(
         sensors['anemometer']['table'],  # Nombre de la tabla.
         sensors['anemometer']['sensor'].tablemodel()  # Modelo de tabla con sus columnas.
+    )
+
+if (os.getenv('S_BH1750') == 'True') or \
+   (os.getenv('S_BH1750') == 'true'):
+    # Establezco la ruta a la API
+    api_path = '/ws/light/add-json'
+
+    sensors['bh1750'] = {
+        'sensor': BH1750(),
+        'table': BH1750.table_name,
+        'data': None,
+        'api_path': api_path,
+    }
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['bh1750']['table'],  # Nombre de la tabla.
+        sensors['bh1750']['sensor'].tablemodel()  # Modelo de tabla y columnas.
     )
 
 
@@ -178,8 +196,9 @@ def save_to_api(apiconnection, dbconnection):
 
 
 def loop():
-    # Leo los sensores y los almaceno
+    # Contador de lecturas desde la última subida a la API
     n_lecturas = 0
+
     while True:
         n_lecturas = n_lecturas + 1
 
@@ -196,7 +215,7 @@ def loop():
         save_to_db(dbconnection)
 
         # TODO → Controlar por tiempo (unos 5 min) en vez de posición
-        if n_lecturas == 1:
+        if n_lecturas == 2:
             n_lecturas = 0
 
             try:
@@ -225,11 +244,7 @@ def loop():
 loop()
 exit(0)
 
-
 ########################### FIN DEL REFACTORIZADO
-
-
-
 
 
 #######################################
@@ -250,37 +265,13 @@ def readSensors():
     Lee todos los sensores y lo devuelve como diccionario.
     :return:
     """
-
     # BME280 - Temperatura, presión y humedad.
-    #temperature, pressure, humidity = bme280.readBME280All()
     temperature, pressure, humidity = readSensor(bme280.readBME280All, 'BME280')
-
-    # BH1750 - Sensor de luz en medida lux
-    light = readSensor(bh1750.read_light, 'BH1750')
-
-    # Anemometer - Sensor de velocidad de viento leyendo impulsos, medida en m/s
-    #wind = anemometer.get_all_datas()
-
-    # Datos para probar sin usar sensores
-    """
-    temperature, pressure, humidity, light = [
-        random.randrange(15, 38),
-        random.randrange(800, 1200),
-        random.randrange(30, 80),
-        random.randrange(4, 100000),
-    ]
-    """
-
-    # Raspberry temperatura de la CPU
-    #rasp_cpu_temp = func.rpi_cpu_temp()
 
     return {
         'temperature': temperature,
         'pressure': pressure,
         'humidity': humidity,
-        'light': light,
-        #'wind': wind,
-        #'rasp_cpu_temp': rasp_cpu_temp,
     }
 
 def saveData(dbconnection, lecturas):
@@ -291,11 +282,9 @@ def saveData(dbconnection, lecturas):
     :return:
     """
 
-
     dbconnection.saveHumidity({'value': lecturas.get('humidity')})
     dbconnection.savePressure({'value': lecturas.get('pressure')})
     dbconnection.saveTemperature({'value': lecturas.get('temperature')})
-    dbconnection.saveLight({'value': lecturas.get('light')})
 
 
 def dataToApi(apiconnection, data):
@@ -304,10 +293,6 @@ def dataToApi(apiconnection, data):
     :return:
     """
 
-    # leer datos desde select
-    # subirlos a la api
-    # borrarlos de la db local
-
     print('.......................')
     print('Subiendo datos a la API')
     print('.......................')
@@ -315,23 +300,14 @@ def dataToApi(apiconnection, data):
     humidity = data.get('humidity')
     pressure = data.get('pressure')
     temperature = data.get('temperature')
-    light = data.get('light')
 
     apiconnection.upload_humidity(humidity)
     apiconnection.upload_pressure(pressure)
     apiconnection.upload_temperature(temperature)
-    apiconnection.upload_light(light)
 
 
 ## TODO → Esta función quedará en bucle tomando datos cada 10 o 30 segundos.
 def main():
-    # Abro conexión con la base de datos.
-    dbconnection = Dbconnection()
-
-    # Parámetros para acceder a la API
-    apiconnection = Apiconnection()
-
-
 
     # Leo los sensores y los almaceno TODO → Agregar try catch
     n_lecturas = 0

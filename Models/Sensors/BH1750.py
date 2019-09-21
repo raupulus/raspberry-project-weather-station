@@ -9,17 +9,22 @@
 # Date   : 01/08/2019
 #
 # --------------------------------------
+import datetime
+
 import smbus
 import time
 
 
 class BH1750:
-    DEVICE = 0x23      # Default device I2C address
-    POWER_DOWN = 0x00  # No active state
+    DEVICE = 0x23      # Dirección i2c
+    POWER_DOWN = 0x00  # Estado inactivo
     POWER_ON = 0x01    # Power on
     RESET = 0x07       # Reset data register value
     ONE_TIME_HIGH_RES_MODE = 0x20
     bus = smbus.SMBus(1)  # Rev 2 Pi uses 1
+
+    ## Parámetros para devolver datos del modelo de base de datos
+    table_name = 'table_light'
 
     def __init__(self, device=0x23):
         self.DEVICE = device
@@ -53,3 +58,41 @@ class BH1750:
         str_lux = 'Light Level : ' + str(lux) + " lux"
 
         return str_lux
+
+    def get_all_datas(self):
+        return {
+            'value': self.read_light(),
+        }
+
+    def tablemodel(self):
+        """
+        Plantea campos como modelo de datos para una base de datos y poder ser
+        tomados desde el exterior.
+        """
+
+        return {
+            'value': {
+                'type': 'Numeric',
+                'params': {
+                    'precision': 15,
+                    'asdecimal': True,
+                    'scale': 4
+                },
+                'others': None,
+            },
+            'created_at': {
+                'type': 'DateTime',
+                'params': None,
+                'others': {
+                    'default': datetime.datetime.utcnow
+                },
+            },
+        }
+
+    def debug(self):
+        """
+        Función para depurar funcionamiento del modelo proyectando datos por
+        consola.
+        """
+        print('Cantidad de luz actual:', self.read_light())
+        time.sleep(5)

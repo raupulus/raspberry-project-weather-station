@@ -201,13 +201,6 @@ class Dbconnection:
         Column('created_at', DateTime, default=datetime.datetime.utcnow),
     )
 
-    table_light = Table(
-        'meteorology_light', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
-
     meta.create_all(engine)
 
     ## Muestro tablas existentes
@@ -283,20 +276,6 @@ class Dbconnection:
         print('Vaciando tabla temperature')
         self.truncate_table(self.table_temperature)
 
-    def saveLight(self, datos):
-        return self.storageDB(self.table_light, datos)
-
-    def getLight(self):
-        return self.getTable(self.table_light)
-
-    def truncate_light(self):
-        '''
-        Elimina todos los registros en la tabla light
-        '''
-        print('Vaciando tabla light')
-        self.truncate_table(self.table_light)
-
-    # TODO → Limitar obtenidos, ¿500? comprobar cuanto puede subir con JSON/POST
     def getAllData(self):
         '''
         Obtiene todos los datos de la base de datos para organizarlos
@@ -314,7 +293,6 @@ class Dbconnection:
         self.truncate_humidity()
         self.truncate_pressure()
         self.truncate_temperature()
-        self.truncate_light()
 
     def truncate_db(self):
         con = self.connection
