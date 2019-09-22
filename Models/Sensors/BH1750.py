@@ -60,6 +60,10 @@ class BH1750:
         return str_lux
 
     def get_all_datas(self):
+        """
+        Devuelve un diccionario con los datos (coincidiendo con el tablemodel)
+        según lo tomado con el sensor.
+        """
         return {
             'value': self.read_light(),
         }
