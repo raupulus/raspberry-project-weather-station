@@ -64,7 +64,10 @@ from Models.Dbconnection import Dbconnection
 from Models.Apiconnection import Apiconnection
 
 # Importo modelos para los sensores
-from Models.Sensors.BME280 import BME280
+#from Models.Sensors.BME280 import BME280
+from Models.Sensors.BME280_humidity import BME280_humidity
+from Models.Sensors.BME280_temperature import BME280_temperature
+from Models.Sensors.BME280_pressure import BME280_pressure
 from Models.Sensors.BH1750 import BH1750
 from Models.Sensors.Anemometer import Anemometer
 
@@ -79,16 +82,10 @@ dbconnection = Dbconnection()
 # Parámetros para acceder a la API.
 apiconnection = Apiconnection()
 
-# Instancio clase por cada sensor
-bme280 = BME280()
-#bh1750 = BH1750()
-
-########################### REFACTORIZANDO ##############################
-
 # Diccionario con todos los sensores utilizados (Declarados en .env)
 sensors = {}
 
-# Compruebo si está habilitado el sensor para instanciarlo
+# Anemómetro (leyendo pulsos pin GPIO)
 if (os.getenv('S_ANEMOMETER') == 'True') or \
    (os.getenv('S_ANEMOMETER') == 'true'):
 
@@ -111,6 +108,7 @@ if (os.getenv('S_ANEMOMETER') == 'True') or \
         sensors['anemometer']['sensor'].tablemodel()  # Modelo de tabla con sus columnas.
     )
 
+# Sensor de luz BH1750
 if (os.getenv('S_BH1750') == 'True') or \
    (os.getenv('S_BH1750') == 'true'):
     # Establezco la ruta a la API
@@ -127,6 +125,51 @@ if (os.getenv('S_BH1750') == 'True') or \
     dbconnection.table_set_new(
         sensors['bh1750']['table'],  # Nombre de la tabla.
         sensors['bh1750']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+# Sensor de temperatura/presión/humedad
+if (os.getenv('S_BME280') == 'True') or \
+   (os.getenv('S_BME280') == 'true'):
+    # Establezco la ruta a la API
+    api_path_humidity = '/ws/humidity/add-json'
+    api_path_temperature = '/ws/temperature/add-json'
+    api_path_pressure = '/ws/pressure/add-json'
+
+    sensors['bme280_humidity'] = {
+        'sensor': BME280_humidity(),
+        'table': BME280_humidity.table_name,
+        'data': None,
+        'api_path': api_path_humidity,
+    }
+
+    sensors['bme280_temperature'] = {
+        'sensor': BME280_temperature(),
+        'table': BME280_temperature.table_name,
+        'data': None,
+        'api_path': api_path_temperature,
+    }
+
+    sensors['bme280_pressure'] = {
+        'sensor': BME280_pressure(),
+        'table': BME280_pressure.table_name,
+        'data': None,
+        'api_path': api_path_pressure,
+    }
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['bme280_humidity']['table'],  # Nombre de la tabla.
+        sensors['bme280_humidity']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+    dbconnection.table_set_new(
+        sensors['bme280_temperature']['table'],  # Nombre de la tabla.
+        sensors['bme280_temperature']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+    dbconnection.table_set_new(
+        sensors['bme280_pressure']['table'],  # Nombre de la tabla.
+        sensors['bme280_pressure']['sensor'].tablemodel()  # Modelo de tabla y columnas.
     )
 
 
@@ -165,6 +208,7 @@ def save_to_db(dbconnection):
             tablename=sensors[name]['table'],
             params=params['data']
         )
+
 
 def save_to_api(apiconnection, dbconnection):
     """
@@ -232,124 +276,19 @@ def loop():
         print('Tiempo de ejecución: ', str(tiempo_ejecucion))
 
         # Pausa entre cada lectura
-        sleep(10)
-
-    # Acciones tras terminar con error
-    # TODO → controlar interrupciones y excepciones para limpiar/reiniciar todo.
-    dbconnection.closeConnection()
-    anemometer.stop_read()
-
-    exit(0)
-
-loop()
-exit(0)
-
-########################### FIN DEL REFACTORIZADO
-
-
-#######################################
-# #             Funciones           # #
-#######################################
-
-
-def readSensor(sensor_method, sensor_name=''):
-    try:
-        return sensor_method()
-    except Exception:
-        print('Error al leer sensor ' + sensor_name)
-        return None
-
-
-def readSensors():
-    """
-    Lee todos los sensores y lo devuelve como diccionario.
-    :return:
-    """
-    # BME280 - Temperatura, presión y humedad.
-    temperature, pressure, humidity = readSensor(bme280.readBME280All, 'BME280')
-
-    return {
-        'temperature': temperature,
-        'pressure': pressure,
-        'humidity': humidity,
-    }
-
-def saveData(dbconnection, lecturas):
-    """
-    Almacena los datos de los sensores en la base de datos.
-    :param dbconnection:
-    :param lecturas:
-    :return:
-    """
-
-    dbconnection.saveHumidity({'value': lecturas.get('humidity')})
-    dbconnection.savePressure({'value': lecturas.get('pressure')})
-    dbconnection.saveTemperature({'value': lecturas.get('temperature')})
-
-
-def dataToApi(apiconnection, data):
-    """
-    Sube todos los datos locales a la API en el VPS externo.
-    :return:
-    """
-
-    print('.......................')
-    print('Subiendo datos a la API')
-    print('.......................')
-
-    humidity = data.get('humidity')
-    pressure = data.get('pressure')
-    temperature = data.get('temperature')
-
-    apiconnection.upload_humidity(humidity)
-    apiconnection.upload_pressure(pressure)
-    apiconnection.upload_temperature(temperature)
-
-
-## TODO → Esta función quedará en bucle tomando datos cada 10 o 30 segundos.
-def main():
-
-    # Leo los sensores y los almaceno TODO → Agregar try catch
-    n_lecturas = 0
-    while True:
-        n_lecturas = n_lecturas + 1
-
-        # Guardo el momento que inicia lectura
-        marca_inicio = datetime.datetime.now(tz=None)
-
-        print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
-
-        lecturas = readSensors()
-
-        if lecturas is not None:
-            saveData(dbconnection, lecturas)
-
-        # TODO → Controlar por tiempo (unos 5 min) en vez de posición
-        if n_lecturas == 2:
-            n_lecturas = 0
-
-            try:
-                dataToApi(apiconnection, dbconnection.getAllData())
-                dbconnection.truncate_all_sensors_data()
-            except():
-                print('Error al subir datos a la api')
-
-        # Muestro tiempo en realizarse la lectura de datos.
-        print('Inicio: ', str(marca_inicio))
-        marca_fin = datetime.datetime.now(tz=None)
-        print('Fin: ', str(marca_fin))
-
-        tiempo_ejecucion = marca_fin - marca_inicio
-        print('Tiempo de ejecución: ', str(tiempo_ejecucion))
-
-        # Pausa entre cada lectura
         sleep(40)
 
     # Acciones tras terminar con error
     # TODO → controlar interrupciones y excepciones para limpiar/reiniciar todo.
-    dbconnection.closeConnection()
+    dbconnection.close_connection()
     anemometer.stop_read()
 
+    exit(0)
+
+
+def main():
+    print('Iniciando Aplicación')
+    loop()
     exit(0)
 
 
