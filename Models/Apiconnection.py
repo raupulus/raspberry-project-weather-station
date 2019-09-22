@@ -175,7 +175,6 @@ class Apiconnection:
             indent=4,
         )
 
-
     def upload(self, sensorname, path, datas, columns):
         """
         Recibe la ruta dentro de la API y los datos a enviar para procesar la
@@ -190,27 +189,3 @@ class Apiconnection:
             result_send = self.send(path, datas_json)
 
             return result_send
-
-
-# ############# Sin refactorizar aún
-
-    def upload_humidity(self, datas):
-        if datas:
-            print('Subiendo humidity')
-            datas_json = self.parse_to_json(datas)
-            #print(datas_json)
-            self.send('/ws/humidity/add-json', datas_json)
-
-    def upload_pressure(self, datas):
-        if datas:
-            print('Subiendo pressure')
-            datas_json = self.parse_to_json(datas)
-            #print(datas_json)
-            self.send('/ws/pressure/add-json', datas_json)
-
-    def upload_temperature(self, datas):
-        if datas:
-            print('Subiendo temperature')
-            datas_json = self.parse_to_json(datas)
-            #print(datas_json)
-            self.send('/ws/temperature/add-json', datas_json)
