@@ -58,18 +58,9 @@ from dotenv import load_dotenv
 load_dotenv(override=True)
 import os
 
-#######################################
-# #             Variables           # #
-#######################################
 
-#######################################
-# #             Funciones           # #
-#######################################
-
-
-# TODO → Adecuar nombres de métodos a reglas de estilos
 class Dbconnection:
-    ## Datos desde .env
+    # Datos desde .env
     DB_CONNECTION = os.getenv("DB_CONNECTION")
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT = os.getenv("DB_PORT")
@@ -84,8 +75,6 @@ class Dbconnection:
     meta = MetaData()
     connection = engine.connect()
 
-
-    ##################### REFACTORIZANDO
     tables = {}
 
     def table_set_new(self, tablename, parameters):
@@ -106,7 +95,7 @@ class Dbconnection:
             type_column = None
             other_data = datas['others']
 
-            ## Creo el campo según el tipo de dato.
+            # Creo el campo según el tipo de dato.
             if data_type == 'Numeric':
                 type_column = Numeric(**data_params)
             elif data_type == 'DateTime':
@@ -128,11 +117,8 @@ class Dbconnection:
             *columns,
         )
 
-
         self.meta.create_all(self.engine)
 
-        #print(self.tables)
-        #print(self.tables[tablename])
         print('Tablas en la DB: ', self.engine.table_names())
 
     def table_get_data(self, tablename):
@@ -160,13 +146,13 @@ class Dbconnection:
 
         print('Guardando en DB: ', table, params)
 
-        ## Inserto Datos
+        # Inserto Datos
         try:
             stmt = table.insert().values(params).return_defaults()
             result = self.connection.execute(stmt)
             # server_created_at = result.returned_defaults['created_at']
-        except Exception:
-            print('Ha ocurrido un problema al insertar datos', Exception)
+        except Exception as e:
+            print('Ha ocurrido un problema al insertar datos', e.__class__.__name__)
             return None
 
     def table_truncate(self, tablename):
@@ -176,125 +162,24 @@ class Dbconnection:
         """
         self.connection.execute(self.tables[tablename].delete())
 
-    ##################### FIN REFACTORIZADO
-
-
-    # Creo tablas
-    table_humidity = Table(
-        'meteorology_humidity', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
-
-    table_pressure = Table(
-        'meteorology_pressure', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
-
-    table_temperature = Table(
-        'meteorology_temperature', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
-
-    meta.create_all(engine)
-
-    ## Muestro tablas existentes
-    print('Tablas en la DB: ', engine.table_names())
-
-    def storageDB(self, table, datos):
-        """
-            Almacena el array de datos tomados por los sensores en la base de datos.
-        """
-
-        print('Guardando: ', table, datos)
-
-        ## Inserto Datos
-        try:
-            stmt = table.insert().values(datos).return_defaults()
-            result = self.connection.execute(stmt)
-            # server_created_at = result.returned_defaults['created_at']
-        except Exception:
-            print('Ha ocurrido un problema al insertar datos en:', table)
-            return None
-
-        return result
-
-    def getTable(self, table):
-        """
-        Recibe el modelo de la tabla y trae todas las entradas que contenga.
-        :param table Modelo de tabla:
-        :return Devuelve el resultado de la consulta:
-        """
-        return self.connection.execute(
-            select([
-                table.columns.value,
-                table.columns.created_at,
-            ])
-        )
-
-    def saveHumidity(self, datos):
-        return self.storageDB(self.table_humidity, datos)
-
-    def getHumidity(self):
-        return self.getTable(self.table_humidity)
-
-    def truncate_humidity(self):
+    def get_all_data(self):
         '''
-        Elimina todos los registros en la tabla humidity
+        Obtiene todos los datos de la base de datos para todos los
+        sensores y los devuelve organizados.
         '''
-        print('Vaciando tabla humidity')
-        self.truncate_table(self.table_humidity)
-
-    def savePressure(self, datos):
-        return self.storageDB(self.table_pressure, datos)
-
-    def getPressure(self):
-        return self.getTable(self.table_pressure)
-
-    def truncate_pressure(self):
-        '''
-        Elimina todos los registros en la tabla pressure
-        '''
-        print('Vaciando tabla pressure')
-        self.truncate_table(self.table_pressure)
-
-    def saveTemperature(self, datos):
-        return self.storageDB(self.table_temperature, datos)
-
-    def getTemperature(self):
-        return self.getTable(self.table_temperature)
-
-    def truncate_temperature(self):
-        '''
-        Elimina todos los registros en la tabla temperature
-        '''
-        print('Vaciando tabla temperature')
-        self.truncate_table(self.table_temperature)
-
-    def getAllData(self):
-        '''
-        Obtiene todos los datos de la base de datos para organizarlos
-        y devolverlos.
-        '''
-
-        return {
-            'humidity': self.getHumidity(),
-            'pressure': self.getPressure(),
-            'temperature': self.getTemperature(),
-            'light': self.getLight(),
-        }
+        pass
 
     def truncate_all_sensors_data(self):
-        self.truncate_humidity()
-        self.truncate_pressure()
-        self.truncate_temperature()
+        """
+        Limpia todas las tablas para los sensores establecidos.
+        """
+        pass
 
     def truncate_db(self):
+        """
+        Limpia la Base de datos completamente para comenzar a recopilar
+        información desde una base de datos saneada/limpia.
+        """
         con = self.connection
         trans = con.begin()
         con.execute('SET FOREIGN_KEY_CHECKS = 0;')
@@ -303,9 +188,6 @@ class Dbconnection:
         con.execute('SET FOREIGN_KEY_CHECKS = 1;')
         trans.commit()
 
-    def truncate_table(self, table):
-        self.connection.execute(table.delete())
-
-    def closeConnection(self):
+    def close_connection(self):
         print('Cerrando conexión con la Base de Datos')
         self.connection.close()
