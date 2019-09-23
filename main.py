@@ -70,6 +70,7 @@ from Models.Sensors.BME280_temperature import BME280_temperature
 from Models.Sensors.BME280_pressure import BME280_pressure
 from Models.Sensors.BH1750 import BH1750
 from Models.Sensors.Anemometer import Anemometer
+from Models.Sensors.VEML6070 import VEML6070
 
 #######################################
 # #             Variables           # #
@@ -125,6 +126,25 @@ if (os.getenv('S_BH1750') == 'True') or \
     dbconnection.table_set_new(
         sensors['bh1750']['table'],  # Nombre de la tabla.
         sensors['bh1750']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+# Sensor de rayos UV VEML6070
+if (os.getenv('S_VEML6070') == 'True') or \
+   (os.getenv('S_VEML6070') == 'true'):
+    # Establezco la ruta a la API
+    api_path = '/ws/uv/add-json'
+
+    sensors['veml6070'] = {
+        'sensor': VEML6070(),
+        'table': VEML6070.table_name,
+        'data': None,
+        'api_path': api_path,
+    }
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['veml6070']['table'],  # Nombre de la tabla.
+        sensors['veml6070']['sensor'].tablemodel()  # Modelo de tabla y columnas.
     )
 
 # Sensor de temperatura/presión/humedad

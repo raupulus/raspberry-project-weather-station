@@ -25,8 +25,8 @@ class Anemometer():
     ## Cantidad de pulsos (cierres de circuito) que tiene por vuelta completa.
     pulsos_por_vuelta = 2
 
-    ## Pin sobre el que se toman las lecturas/pulsos digitales.
-    PIN = 7
+    ## Pin GPIO sobre el que se toman las lecturas/pulsos digitales.
+    PIN = 4
 
     ## Radio del anemómetro en centímetros.
     RADIO = 9
@@ -86,7 +86,7 @@ class Anemometer():
         Inicializa la conexión con el sensor escuchando pulsos y asignando
         eventos para detectarlos.
         """
-        GPIO.setmode(GPIO.BOARD)
+        GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         GPIO.add_event_detect(self.PIN, GPIO.RISING, callback=self.sumar_pulso,
                               bouncetime=5)
