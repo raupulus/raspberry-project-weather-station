@@ -98,6 +98,11 @@ sudo apt install python3-dotenv python3-sql python3-sqlalchemy \
     python3-pip 
 ```
 
+Instalamos dependencias desde el gestor de paquetes de python3, pip3
+```bash
+pip3 install adafruit-circuitpython-veml6070
+```
+
 ### Asignar tarea cron para ejecutarse automáticamente al iniciar la raspberry.
 
 Podemos hacer que se inicie automáticamente al iniciar nuestra raspberry y
