@@ -75,7 +75,7 @@ class Apiconnection:
     API_URL = os.getenv("API_URL")
     API_TOKEN = os.getenv("API_TOKEN")
 
-    def requests_retry_session (
+    def requests_retry_session(
             retries=3,
             backoff_factor=0.3,
             status_forcelist=(500, 502, 504),
@@ -132,49 +132,60 @@ class Apiconnection:
             )
 
             print('Código de envío: ', req.status_code)
-            print('Recibido: ', req.text)
+            #print('Recibido: ', req.text)
+
+            if int(req.status_code) != 200:
+                return False
+            else:
+                return True
         except Exception as e:
             print('Ha fallado la petición http :', e.__class__.__name__)
-            sleep(20)
+            sleep(5)
 
-    def parseToJson(self, datas):
+            return False
+
+    def parse_to_json(self, rows, columns):
+        """
+        Convierte los datos recibidos en JSON
+        :param rows: Tuplas con todas las entradas desde la DB.
+        :param columns: Nombre de las columnas en orden respecto a tuplas.
+        :return: Devuelve el objeto json
+        """
+
+        result = []
+
+        # Compongo el objeto json que será devuelto.
+        for row in rows:
+            tupla = {}
+
+            # Por cada tupla creo la pareja de clave: valor
+            for iteracion in range(len(columns)):
+                cell = str(row[iteracion])
+
+                if columns[iteracion] != 'id':
+                    tupla.update({columns[iteracion]: cell})
+
+            result.append(tupla)
+
         return json.dumps(
-            [
-                {
-                    'value': str(d.value),
-                    'created_at': str(d.created_at)
-                } for d in datas
-            ],
+            result,
             default=None,
             ensure_ascii=False,
             sort_keys=True,
             indent=4,
         )
 
-    def upload_humidity(self, datas):
+    def upload(self, sensorname, path, datas, columns):
+        """
+        Recibe la ruta dentro de la API y los datos a enviar para procesar la
+        subida atacando la API.
+        :param path: Ruta dentro de la api
+        :param datas: Datos a enviar
+        """
         if datas:
-            print('Subiendo humidity')
-            datas_json = self.parseToJson(datas)
-            #print(datas_json)
-            self.send('/ws/humidity/add-json', datas_json)
+            print('Subiendo: ' + sensorname + ' a ' + path)
+            datas_json = self.parse_to_json(datas, columns)
+            print('Datos formateados en JSON:', datas_json)
+            result_send = self.send(path, datas_json)
 
-    def upload_pressure(self, datas):
-        if datas:
-            print('Subiendo pressure')
-            datas_json = self.parseToJson(datas)
-            #print(datas_json)
-            self.send('/ws/pressure/add-json', datas_json)
-
-    def upload_temperature(self, datas):
-        if datas:
-            print('Subiendo temperature')
-            datas_json = self.parseToJson(datas)
-            #print(datas_json)
-            self.send('/ws/temperature/add-json', datas_json)
-
-    def upload_light(self, datas):
-        if datas:
-            print('Subiendo light')
-            datas_json = self.parseToJson(datas)
-            #print(datas_json)
-            self.send('/ws/light/add-json', datas_json)
+            return result_send

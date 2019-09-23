@@ -51,25 +51,16 @@
 
 import datetime
 from sqlalchemy import create_engine, Table, Column, Integer, String, \
-    MetaData, DateTime, Numeric, select
+                       MetaData, DateTime, Numeric, select
 
 ## Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
 load_dotenv(override=True)
 import os
 
-#######################################
-# #             Variables           # #
-#######################################
 
-#######################################
-# #             Funciones           # #
-#######################################
-
-
-# TODO → Adecuar nombres de métodos a reglas de estilos
 class Dbconnection:
-    ## Datos desde .env
+    # Datos desde .env
     DB_CONNECTION = os.getenv("DB_CONNECTION")
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT = os.getenv("DB_PORT")
@@ -84,144 +75,111 @@ class Dbconnection:
     meta = MetaData()
     connection = engine.connect()
 
-    # Creo tablas
-    table_humidity = Table(
-        'meteorology_humidity', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
+    tables = {}
 
-    table_pressure = Table(
-        'meteorology_pressure', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
-
-    table_temperature = Table(
-        'meteorology_temperature', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
-
-    table_light = Table(
-        'meteorology_light', meta,
-        Column('id', Integer, primary_key=True, autoincrement=True),
-        Column('value', Numeric(precision=15, asdecimal=True, scale=4)),
-        Column('created_at', DateTime, default=datetime.datetime.utcnow),
-    )
-
-    meta.create_all(engine)
-
-    ## Muestro tablas existentes
-    print('Tablas en la DB: ', engine.table_names())
-
-    def storageDB(self, table, datos):
+    def table_set_new(self, tablename, parameters):
         """
-            Almacena el array de datos tomados por los sensores en la base de datos.
+        Almacena una nueva tabla en el array de tablas.
+        :param tablename: Nombre de la tabla.
+        :param parameters: Parámetros para cada columna.
         """
+        columns = []
 
-        print('Guardando: ', table, datos)
+        # Seteo la columna **id**
+        columns.append(Column('id', Integer, primary_key=True, autoincrement=True))
 
-        ## Inserto Datos
-        try:
-            stmt = table.insert().values(datos).return_defaults()
-            result = self.connection.execute(stmt)
-            # server_created_at = result.returned_defaults['created_at']
-        except Exception:
-            print('Ha ocurrido un problema al insertar datos', Exception)
-            return None
+        # Seteo el resto de columnas.
+        for name, datas in parameters.items():
+            data_type = datas['type']
+            data_params = datas['params']
+            type_column = None
+            other_data = datas['others']
 
-        return result
+            # Creo el campo según el tipo de dato.
+            if data_type == 'Numeric':
+                type_column = Numeric(**data_params)
+            elif data_type == 'DateTime':
+                type_column = DateTime
+            elif data_type == 'Integer':
+                type_column = Integer
+            elif data_type == 'String':
+                type_column = String(**data_params)
 
-    def getTable(self, table):
-        """
-        Recibe el modelo de la tabla y trae todas las entradas que contenga.
-        :param table Modelo de tabla:
-        :return Devuelve el resultado de la consulta:
-        """
-        return self.connection.execute(
-            select([
-                table.columns.value,
-                table.columns.created_at,
-            ])
+            if datas['others']:
+                columns.append(Column(name, type_column, **other_data))
+            else:
+                columns.append(Column(name, type_column))
+
+        # Creo la tabla con las columnas antes seteadas.
+        self.tables[tablename] = Table(
+            tablename,
+            self.meta,
+            *columns,
         )
 
-    def saveHumidity(self, datos):
-        return self.storageDB(self.table_humidity, datos)
+        self.meta.create_all(self.engine)
 
-    def getHumidity(self):
-        return self.getTable(self.table_humidity)
+        print('Tablas en la DB: ', self.engine.table_names())
 
-    def truncate_humidity(self):
+    def table_get_data(self, tablename):
+        """
+        Obtiene los datos de una tabla previamente seteada.
+        :param tablename: Nombre de la tabla desde la que obtener datos.
+        """
+
+        table = self.tables[tablename]
+
+        # Ejecuto la consulta para traer las tuplas de la tabla completa
+        return self.connection.execute(
+            select([table])
+        ).fetchall()
+
+    def table_save_data(self, sensorname, tablename, params):
+        """
+        Almacena datos recibidos en la tabla recibida.
+        :param sensorname: Nombre del sensor sobre el que se trabaja.
+        :param tablename: Nombre de la tabla en la que guardar.
+        :param params: Diccionario con los parámetros del sensor.
+        """
+
+        table = self.tables[tablename]
+
+        print('Guardando en DB: ', table, params)
+
+        # Inserto Datos
+        try:
+            stmt = table.insert().values(params).return_defaults()
+            result = self.connection.execute(stmt)
+            # server_created_at = result.returned_defaults['created_at']
+        except Exception as e:
+            print('Ha ocurrido un problema al insertar datos', e.__class__.__name__)
+            return None
+
+    def table_truncate(self, tablename):
+        """
+        Vacia completamente la tabla recibida.
+        :param tablename: Nombre de la tabla.
+        """
+        self.connection.execute(self.tables[tablename].delete())
+
+    def get_all_data(self):
         '''
-        Elimina todos los registros en la tabla humidity
+        Obtiene todos los datos de la base de datos para todos los
+        sensores y los devuelve organizados.
         '''
-        print('Vaciando tabla humidity')
-        self.truncate_table(self.table_humidity)
-
-    def savePressure(self, datos):
-        return self.storageDB(self.table_pressure, datos)
-
-    def getPressure(self):
-        return self.getTable(self.table_pressure)
-
-    def truncate_pressure(self):
-        '''
-        Elimina todos los registros en la tabla pressure
-        '''
-        print('Vaciando tabla pressure')
-        self.truncate_table(self.table_pressure)
-
-    def saveTemperature(self, datos):
-        return self.storageDB(self.table_temperature, datos)
-
-    def getTemperature(self):
-        return self.getTable(self.table_temperature)
-
-    def truncate_temperature(self):
-        '''
-        Elimina todos los registros en la tabla temperature
-        '''
-        print('Vaciando tabla temperature')
-        self.truncate_table(self.table_temperature)
-
-    def saveLight(self, datos):
-        return self.storageDB(self.table_light, datos)
-
-    def getLight(self):
-        return self.getTable(self.table_light)
-
-    def truncate_light(self):
-        '''
-        Elimina todos los registros en la tabla light
-        '''
-        print('Vaciando tabla light')
-        self.truncate_table(self.table_light)
-
-    # TODO → Limitar obtenidos, ¿500? comprobar cuanto puede subir con JSON/POST
-    def getAllData(self):
-        '''
-        Obtiene todos los datos de la base de datos para organizarlos
-        y devolverlos.
-        '''
-
-        return {
-            'humidity': self.getHumidity(),
-            'pressure': self.getPressure(),
-            'temperature': self.getTemperature(),
-            'light': self.getLight(),
-        }
+        pass
 
     def truncate_all_sensors_data(self):
-        self.truncate_humidity()
-        self.truncate_pressure()
-        self.truncate_temperature()
-        self.truncate_light()
+        """
+        Limpia todas las tablas para los sensores establecidos.
+        """
+        pass
 
     def truncate_db(self):
+        """
+        Limpia la Base de datos completamente para comenzar a recopilar
+        información desde una base de datos saneada/limpia.
+        """
         con = self.connection
         trans = con.begin()
         con.execute('SET FOREIGN_KEY_CHECKS = 0;')
@@ -230,9 +188,6 @@ class Dbconnection:
         con.execute('SET FOREIGN_KEY_CHECKS = 1;')
         trans.commit()
 
-    def truncate_table(self, table):
-        self.connection.execute(table.delete())
-
-    def closeConnection(self):
+    def close_connection(self):
         print('Cerrando conexión con la Base de Datos')
         self.connection.close()
