@@ -187,10 +187,10 @@ class Anemometer():
 
         ## Almaceno todos los datos a devolver.
         data = {
-            'wind_speed': self.wind_speed,
-            'wind_average': self.wind_average,
-            'wind_min': self.wind_min,
-            'wind_max': self.wind_max,
+            'speed': self.wind_speed,
+            'average': self.wind_average,
+            'min': self.wind_min,
+            'max': self.wind_max,
         }
 
         ## Limpio los datos del modelo.
@@ -246,7 +246,7 @@ class Anemometer():
         """
 
         return {
-            'wind_speed': {
+            'speed': {
                 'type': 'Numeric',
                 'params': {
                     'precision': 15,
@@ -255,7 +255,7 @@ class Anemometer():
                 },
                 'others': None,
             },
-            'wind_average': {
+            'average': {
                 'type': 'Numeric',
                 'params': {
                     'precision': 15,
@@ -264,7 +264,7 @@ class Anemometer():
                 },
                 'others': None,
             },
-            'wind_min': {
+            'min': {
                 'type': 'Numeric',
                 'params': {
                     'precision': 15,
@@ -273,7 +273,7 @@ class Anemometer():
                 },
                 'others': None,
             },
-            'wind_max': {
+            'max': {
                 'type': 'Numeric',
                 'params': {
                     'precision': 15,
