@@ -283,12 +283,15 @@ def loop():
     dbconnection.close_connection()
     anemometer.stop_read()
 
-    exit(0)
-
 
 def main():
     print('Iniciando Aplicación')
-    loop()
+    try:
+        loop()
+    except Exception as e:
+        print('Ha ocurrido un error en la aplicación:', e.__class__.__name__)
+        sleep(300)
+        main()
     exit(0)
 
 

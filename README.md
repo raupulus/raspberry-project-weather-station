@@ -35,11 +35,17 @@ en otro tipo de hardware similar o con pequeñas modificaciones.
 
 ## Models
 
-- BME280 → Modelo que representa al sensor bosh BME280 para medir 
-temperatura, humedad y presión.
 - BH1750 → Modelo que representa al sensor BH1750 para medir la cantidad de 
 luz en medida **lux**
-
+- BME280 → Modelo que representa al sensor bosh BME280 para medir 
+temperatura, humedad y presión.
+- BME280_humidity → Modelo que representa solo la humedad para el sensor bosh
+- BME280_temperature → Modelo que representa solo la temperatura para el sensor
+ bosh
+- BME280_pressure → Modelo que representa solo la presión para el sensor bosh
+- Anemometer → Modelo que representa la lectura de velocidad del viento a 
+ través de un anemómetro que envía pulsos por un pin GPIO
+ 
 ## Instalación
 
 A continuación describo los pasos para instalar que he ido usando durante el
