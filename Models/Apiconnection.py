@@ -138,7 +138,7 @@ class Apiconnection:
             if int(req.status_code) == 201:
                 return True
             elif int(req.status_code) == 200:
-                print('Al guardar enla API algunos elementos tuvieron error.')
+                print('Al guardar en la API algunos elementos tuvieron error.')
                 return True
             else:
                 return False
