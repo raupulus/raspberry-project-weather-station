@@ -131,13 +131,17 @@ class Apiconnection:
                 timeout=30
             )
 
-            print('Código de envío: ', req.status_code)
+            print('Respuesta de API: ', req.status_code)
             #print('Recibido: ', req.text)
 
-            if int(req.status_code) != 200:
-                return False
-            else:
+            # Guardado correctamente 201, con errores 200, mal 500
+            if int(req.status_code) == 201:
                 return True
+            elif int(req.status_code) == 200:
+                print('Al guardar enla API algunos elementos tuvieron error.')
+                return True
+            else:
+                return False
         except Exception as e:
             print('Ha fallado la petición http :', e.__class__.__name__)
             sleep(5)
@@ -183,9 +187,9 @@ class Apiconnection:
         :param datas: Datos a enviar
         """
         if datas:
-            print('Subiendo: ' + sensorname + ' a ' + path)
+            print('Subiendo sensor: ' + sensorname + ', ruta de api: ' + path)
             datas_json = self.parse_to_json(datas, columns)
-            print('Datos formateados en JSON:', datas_json)
+            #print('Datos formateados en JSON:', datas_json)
             result_send = self.send(path, datas_json)
 
             return result_send
