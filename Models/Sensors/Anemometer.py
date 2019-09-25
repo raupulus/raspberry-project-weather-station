@@ -26,7 +26,7 @@ class Anemometer():
     pulsos_por_vuelta = 2
 
     ## Pin GPIO sobre el que se toman las lecturas/pulsos digitales.
-    PIN = 4
+    PIN = 17
 
     ## Radio del anemómetro en centímetros.
     RADIO = 9
@@ -73,7 +73,7 @@ class Anemometer():
     ## Tiempo en seg. que tarda entre mediciones para recalcular estadísticas
     s_mediciones = 5
 
-    def __init__(self, pin=7, RADIO = 9, pulsos_vuelta=2, s_mediciones=5):
+    def __init__(self, pin=17, RADIO = 9, pulsos_vuelta=2, s_mediciones=5):
         self.PIN = pin
         self.RADIO = RADIO
         self.pulsos_por_vuelta = pulsos_vuelta

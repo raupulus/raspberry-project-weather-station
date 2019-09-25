@@ -70,7 +70,6 @@ from Models.Sensors.BME280_temperature import BME280_temperature
 from Models.Sensors.BME280_pressure import BME280_pressure
 from Models.Sensors.BH1750 import BH1750
 from Models.Sensors.Anemometer import Anemometer
-from Models.Sensors.VEML6070 import VEML6070
 
 #######################################
 # #             Variables           # #
@@ -94,7 +93,7 @@ if (os.getenv('S_ANEMOMETER') == 'True') or \
     api_path = '/ws/winter/add-json'
 
     sensors['anemometer'] = {
-        'sensor': Anemometer(pin=int(os.getenv('S_ANEMOMETER_PIN'))),
+        'sensor': Anemometer(pin=int(os.getenv('S_ANEMOMETER_GPIO'))),
         'table': Anemometer.table_name,
         'data': None,
         'api_path': api_path,
@@ -133,6 +132,8 @@ if (os.getenv('S_VEML6070') == 'True') or \
    (os.getenv('S_VEML6070') == 'true'):
     # Establezco la ruta a la API
     api_path = '/ws/uv/add-json'
+
+    from Models.Sensors.VEML6070 import VEML6070
 
     sensors['veml6070'] = {
         'sensor': VEML6070(),
@@ -306,6 +307,10 @@ def loop():
 
 def main():
     print('Iniciando Aplicación')
+
+    # Pauso 6 segundos para dar margen a la lectura de hilos en sensores.
+    sleep(6)
+
     try:
         loop()
     except Exception as e:
