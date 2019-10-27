@@ -148,6 +148,60 @@ if (os.getenv('S_VEML6070') == 'True') or \
         sensors['veml6070']['sensor'].tablemodel()  # Modelo de tabla y columnas.
     )
 
+# Sensor de rayos UV/UVA/UVB VEML6075
+if (os.getenv('S_VEML6075') == 'True') or \
+   (os.getenv('S_VEML6075') == 'true'):
+    # Establezco la ruta a la API
+    api_path_index = '/ws/uv_index/add-json'
+    api_path_uva = '/ws/uva/add-json'
+    api_path_uvb = '/ws/uvb/add-json'
+
+    #from Models.Sensors.VEML6075 import VEML6075
+    from Models.Sensors.VEML6075_uv_index import VEML6075_uv_index
+    from Models.Sensors.VEML6075_uva import VEML6075_uva
+    from Models.Sensors.VEML6075_uvb import VEML6075_uvb
+
+    sensors['veml6075_index'] = {
+        'sensor': VEML6075_uv_index(),
+        'table': VEML6075_uv_index.table_name,
+        'data': None,
+        'api_path': api_path_uva,
+    }
+
+    sensors['veml6075_uva'] = {
+        'sensor': VEML6075_uva(),
+        'table': VEML6075_uva.table_name,
+        'data': None,
+        'api_path': api_path_index,
+    }
+
+    sensors['veml6075_uvb'] = {
+        'sensor': VEML6075_uvb(),
+        'table': VEML6075_uvb.table_name,
+        'data': None,
+        'api_path': api_path_uvb,
+    }
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['veml6075_index']['table'],  # Nombre de la tabla.
+        sensors['veml6075_index']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['veml6075_uva']['table'],  # Nombre de la tabla.
+        sensors['veml6075_uva']['sensor'].tablemodel()
+        # Modelo de tabla y columnas.
+    )
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['veml6075_uvb']['table'],  # Nombre de la tabla.
+        sensors['veml6075_uvb']['sensor'].tablemodel()
+        # Modelo de tabla y columnas.
+    )
+
 # Sensor de temperatura/presión/humedad
 if (os.getenv('S_BME280') == 'True') or \
    (os.getenv('S_BME280') == 'true'):
