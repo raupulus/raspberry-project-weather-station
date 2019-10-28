@@ -118,16 +118,14 @@ if (os.getenv('S_CJMCU811') == 'True') or \
     from Models.Sensors.CJMCU811_tvoc import CJMCU811_tvoc
     from Models.Sensors.CJMCU811_eco2 import CJMCU811_eco2
 
-    ## TODO → Dejar en subproceso 20 minutos para calibrar, luego agregar sensor
-
     eco2 = CJMCU811_eco2()
-    print('Comenzando calibración del sensor CJMCU811_eco2')
+    print('Comenzando calibración del sensor CJMCU811_eco2 (20 minutos)')
     eco2.debug()
 
     sleep(2)
 
     tvoc = CJMCU811_tvoc()
-    print('Comenzando calibración del sensor CJMCU811_tvoc')
+    print('Comenzando calibración del sensor CJMCU811_tvoc (20 minutos)')
     tvoc.debug()
 
     sensors['cjmcu811_eco2'] = {

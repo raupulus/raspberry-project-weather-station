@@ -60,6 +60,7 @@ class CJMCU811_eco2(CJMCU811):
 
         ## Espera de 20 minutos para calibrar sensor.
         if minutes < 20:
+            print('Calibrando CJMU811_eco2', self.get_eco2())
             return None
 
         return {

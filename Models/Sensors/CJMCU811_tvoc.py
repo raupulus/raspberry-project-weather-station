@@ -60,6 +60,7 @@ class CJMCU811_tvoc(CJMCU811):
 
         ## Espera de 20 minutos para calibrar sensor.
         if minutes < 20:
+            print('Calibrando CJMU811_tvoc', self.get_tvoc())
             return None
 
         return {
