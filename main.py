@@ -329,11 +329,13 @@ def save_to_db(dbconnection):
     """
 
     for name, params in sensors.items():
-        dbconnection.table_save_data(
-            sensorname=name,
-            tablename=sensors[name]['table'],
-            params=params['data']
-        )
+        # Solo almaceno en la DB cuando los datos de lecturas no son "None"
+        if params['data'] is not None:
+            dbconnection.table_save_data(
+                sensorname=name,
+                tablename=sensors[name]['table'],
+                params=params['data']
+            )
 
 
 def save_to_api(apiconnection, dbconnection):
