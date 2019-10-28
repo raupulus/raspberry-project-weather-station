@@ -46,12 +46,21 @@ from Models.Sensors.CJMCU811 import CJMCU811
 class CJMCU811_eco2(CJMCU811):
     table_name = 'table_eco2'
 
+    ## Marca con el momento en el que comienza a tomar datos.
+    started_at = datetime.datetime.now()
+
     def get_all_datas(self):
         """
         Devuelve un diccionario con los datos (coincidiendo con el tablemodel)
         según lo tomado con el sensor.
         """
         sleep(1)
+
+        minutes = (datetime.datetime.now() - self.started_at).total_seconds() / 60.0
+
+        ## Espera de 20 minutos para calibrar sensor.
+        if minutes < 20:
+            return None
 
         return {
             'value': self.get_eco2(),
