@@ -50,7 +50,7 @@ from Models.Sensors.AbstractModel import AbstractModel
 
 
 class VEML6070(AbstractModel):
-    table_name = 'table_uv'
+    table_name = 'table_uva'
     uv = ''
 
     def __init__(self):
@@ -73,25 +73,17 @@ class VEML6070(AbstractModel):
     def get_all_datas(self):
         uv_raw, risk_level = self.read_uv()
         return {
-            'uv_raw': uv_raw,
-            'risk_level': risk_level,
+            'value': uv_raw,
         }
 
     def tablemodel(self):
         return {
-            'uv_raw': {
+            'value': {
                 'type': 'Numeric',
                 'params': {
                     'precision': 15,
                     'asdecimal': True,
                     'scale': 4
-                },
-                'others': None,
-            },
-            'risk_level': {
-                'type': 'String',
-                'params': {
-                    'length': 32,
                 },
                 'others': None,
             },

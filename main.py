@@ -188,7 +188,7 @@ if (os.getenv('S_BH1750') == 'True') or \
 if (os.getenv('S_VEML6070') == 'True') or \
    (os.getenv('S_VEML6070') == 'true'):
     # Establezco la ruta a la API
-    api_path = '/ws/uv/add-json'
+    api_path = '/ws/uva/add-json'
 
     from Models.Sensors.VEML6070 import VEML6070
 
