@@ -43,7 +43,7 @@
 #######################################
 ##
 # # Este script recopila datos de los sensores y los almacena en la base
-# # de datos.
+# # de datos. Posteriormente los sube a una API.
 ##
 
 #######################################
@@ -107,6 +107,63 @@ if (os.getenv('S_ANEMOMETER') == 'True') or \
         sensors['anemometer']['table'],  # Nombre de la tabla.
         sensors['anemometer']['sensor'].tablemodel()  # Modelo de tabla con sus columnas.
     )
+
+# Sensor de ECO2 y TVOC
+if (os.getenv('S_CJMCU811') == 'True') or \
+   (os.getenv('S_CJMCU811') == 'true'):
+    # Establezco la ruta a la API
+    api_path_eco2 = '/ws/eco2/add-json'
+    api_path_tvoc = '/ws/tvoc/add-json'
+
+    # Intento inicializar el sensor, falla pocas veces pero rompe la aplicación.
+    try:
+        from Models.Sensors.CJMCU811_tvoc import CJMCU811_tvoc
+        from Models.Sensors.CJMCU811_eco2 import CJMCU811_eco2
+
+        eco2 = CJMCU811_eco2()
+        print('Comenzando calibración del sensor CJMCU811_eco2 (20 minutos)')
+        eco2.debug()
+
+        sleep(2)
+
+        tvoc = CJMCU811_tvoc()
+        print('Comenzando calibración del sensor CJMCU811_tvoc (20 minutos)')
+        tvoc.debug()
+
+        sensors['cjmcu811_eco2'] = {
+            'sensor': eco2,
+            'table': eco2.table_name,
+            'data': None,
+            'api_path': api_path_eco2,
+        }
+
+        sleep(1)
+
+        sensors['cjmcu811_tvoc'] = {
+            'sensor': tvoc,
+            'table': tvoc.table_name,
+            'data': None,
+            'api_path': api_path_tvoc,
+        }
+
+        sleep(1)
+
+        # Seteo tabla en el modelo de conexión a la DB.
+        dbconnection.table_set_new(
+            sensors['cjmcu811_eco2']['table'],  # Nombre de la tabla.
+            sensors['cjmcu811_eco2']['sensor'].tablemodel()
+            # Modelo de tabla y columnas.
+        )
+
+        # Seteo tabla en el modelo de conexión a la DB.
+        dbconnection.table_set_new(
+            sensors['cjmcu811_tvoc']['table'],  # Nombre de la tabla.
+            sensors['cjmcu811_tvoc']['sensor'].tablemodel()
+            # Modelo de tabla y columnas.
+        )
+    except:
+        print('Ocurrió un problema al iniciar el sensor CJMCU811')
+
 
 # Sensor de luz BH1750
 if (os.getenv('S_BH1750') == 'True') or \
@@ -257,8 +314,9 @@ def read_sensor(method):
     """
     try:
         return method()
-    except Exception:
-        print('Error al leer sensor ', str(method))
+    except Exception as e:
+        print('Error al leer sensor:', str(method))
+        print('Tipo de error al leer sensor:', e.__class__)
         return None
 
 
@@ -278,11 +336,13 @@ def save_to_db(dbconnection):
     """
 
     for name, params in sensors.items():
-        dbconnection.table_save_data(
-            sensorname=name,
-            tablename=sensors[name]['table'],
-            params=params['data']
-        )
+        # Solo almaceno en la DB cuando los datos de lecturas no son "None"
+        if params['data'] is not None:
+            dbconnection.table_save_data(
+                sensorname=name,
+                tablename=sensors[name]['table'],
+                params=params['data']
+            )
 
 
 def save_to_api(apiconnection, dbconnection):
