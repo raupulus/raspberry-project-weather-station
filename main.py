@@ -317,28 +317,28 @@ if (os.getenv('S_BME680') == 'True') or \
     api_path_air_quality = '/ws/air-quality/add-json'
 
     sensors['bme680_humidity'] = {
-        'sensor': BME680_humidity(),
+        'sensor': BME680_humidity(primary=False),
         'table': BME680_humidity.table_name,
         'data': None,
         'api_path': api_path_humidity,
     }
 
     sensors['bme680_temperature'] = {
-        'sensor': BME680_temperature(),
+        'sensor': BME680_temperature(primary=False),
         'table': BME680_temperature.table_name,
         'data': None,
         'api_path': api_path_temperature,
     }
 
     sensors['bme680_pressure'] = {
-        'sensor': BME680_pressure(),
+        'sensor': BME680_pressure(primary=False),
         'table': BME680_pressure.table_name,
         'data': None,
         'api_path': api_path_pressure,
     }
 
     sensors['bme680_air_quality'] = {
-        'sensor': BME680_air_quality(),
+        'sensor': BME680_air_quality(primary=False, calibrate=True),
         'table': BME680_air_quality.table_name,
         'data': None,
         'api_path': api_path_air_quality,
