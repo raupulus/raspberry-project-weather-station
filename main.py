@@ -64,10 +64,13 @@ from Models.Dbconnection import Dbconnection
 from Models.Apiconnection import Apiconnection
 
 # Importo modelos para los sensores
-#from Models.Sensors.BME280 import BME280
 from Models.Sensors.BME280_humidity import BME280_humidity
 from Models.Sensors.BME280_temperature import BME280_temperature
 from Models.Sensors.BME280_pressure import BME280_pressure
+from Models.Sensors.BME680_humidity import BME680_humidity
+from Models.Sensors.BME680_temperature import BME680_temperature
+from Models.Sensors.BME680_pressure import BME680_pressure
+from Models.Sensors.BME680_air_quality import BME680_air_quality
 from Models.Sensors.BH1750 import BH1750
 from Models.Sensors.Anemometer import Anemometer
 
@@ -304,6 +307,63 @@ if (os.getenv('S_BME280') == 'True') or \
         sensors['bme280_pressure']['sensor'].tablemodel()  # Modelo de tabla y columnas.
     )
 
+# Sensor de temperatura/presión/humedad
+if (os.getenv('S_BME680') == 'True') or \
+   (os.getenv('S_BME680') == 'true'):
+    # Establezco la ruta a la API
+    api_path_humidity = '/ws/humidity/add-json'
+    api_path_temperature = '/ws/temperature/add-json'
+    api_path_pressure = '/ws/pressure/add-json'
+    api_path_air_quality = '/ws/air-quality/add-json'
+
+    sensors['bme680_humidity'] = {
+        'sensor': BME680_humidity(),
+        'table': BME680_humidity.table_name,
+        'data': None,
+        'api_path': api_path_humidity,
+    }
+
+    sensors['bme680_temperature'] = {
+        'sensor': BME680_temperature(),
+        'table': BME680_temperature.table_name,
+        'data': None,
+        'api_path': api_path_temperature,
+    }
+
+    sensors['bme680_pressure'] = {
+        'sensor': BME680_pressure(),
+        'table': BME680_pressure.table_name,
+        'data': None,
+        'api_path': api_path_pressure,
+    }
+
+    sensors['bme680_air_quality'] = {
+        'sensor': BME680_air_quality(),
+        'table': BME680_air_quality.table_name,
+        'data': None,
+        'api_path': api_path_air_quality,
+    }
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['bme680_humidity']['table'],  # Nombre de la tabla.
+        sensors['bme680_humidity']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+    dbconnection.table_set_new(
+        sensors['bme680_temperature']['table'],  # Nombre de la tabla.
+        sensors['bme680_temperature']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+    dbconnection.table_set_new(
+        sensors['bme680_pressure']['table'],  # Nombre de la tabla.
+        sensors['bme680_pressure']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+    )
+
+    dbconnection.table_set_new(
+        sensors['bme680_air_quality']['table'],  # Nombre de la tabla.
+        sensors['bme680_air_quality']['sensor'].tablemodel() # Modelo de tabla y columnas.
+    )
 
 def read_sensor(method):
     """

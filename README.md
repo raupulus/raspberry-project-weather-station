@@ -32,6 +32,7 @@ en otro tipo de hardware similar o con pequeñas modificaciones.
 - python3-smbus
 - python3-rpi.gpio
 - python3-pip
+- python3-bme680
 
 ## Models
 
