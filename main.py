@@ -314,7 +314,7 @@ if (os.getenv('S_BME680') == 'True') or \
     api_path_humidity = '/ws/humidity/add-json'
     api_path_temperature = '/ws/temperature/add-json'
     api_path_pressure = '/ws/pressure/add-json'
-    api_path_air_quality = '/ws/air-quality/add-json'
+    api_path_air_quality = '/ws/air_quality/add-json'
 
     sensors['bme680_humidity'] = {
         'sensor': BME680_humidity(primary=False),
