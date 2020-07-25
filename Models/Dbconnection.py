@@ -51,7 +51,9 @@
 
 import datetime
 from sqlalchemy import create_engine, Table, Column, Integer, String, \
-                       MetaData, DateTime, Numeric, select
+                       MetaData, DateTime, Numeric, select, text
+
+from sqlalchemy.orm import sessionmaker
 
 ## Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
@@ -60,6 +62,8 @@ import os
 
 
 class Dbconnection:
+    has_debug = os.getenv("DEBUG") == "True"
+
     # Datos desde .env
     DB_CONNECTION = os.getenv("DB_CONNECTION")
     DB_HOST = os.getenv("DB_HOST")
@@ -74,6 +78,9 @@ class Dbconnection:
                            + '/' + DB_DATABASE)
     meta = MetaData()
     connection = engine.connect()
+
+    # Sesión para acciones por lotes
+    Session = sessionmaker(bind=engine)
 
     tables = {}
 
@@ -134,6 +141,23 @@ class Dbconnection:
             select([table])
         ).fetchall()
 
+    def table_get_data_last(self, tablename, limit):
+        """
+        Obtiene los datos de una tabla previamente seteada limitando resultados.
+        :param tablename: Nombre de la tabla desde la que obtener datos.
+        :param limit: Límite de datos a extraer de la db
+        """
+
+        table = self.tables[tablename]
+
+        if self.has_debug:
+            print('----------- table_get_data_last ------------')
+
+        # Ejecuto la consulta para traer las tuplas de la tabla limitada
+        return self.connection.execute(
+            select([table]).order_by(text('created_at DESC')).limit(limit)
+        ).fetchall()
+
     def table_save_data(self, sensorname, tablename, params):
         """
         Almacena datos recibidos en la tabla recibida.
@@ -161,6 +185,30 @@ class Dbconnection:
         :param tablename: Nombre de la tabla.
         """
         self.connection.execute(self.tables[tablename].delete())
+
+    def table_drop_last_elements(self, tablename, limit):
+        """
+        Elimina los últimos elementos en la cantidad recibida, de una
+        tabla recibida
+        :param tablename: Nombre de la tabla sobre la que actuar
+        :param limit: Límite, cantidad de entradas a borrar
+        :return:
+        """
+        table = self.tables.get(tablename)
+        session = self.Session()
+
+        ## Obtengo los últimos elementos para eliminarlos posteriormente.
+        lastData = self.table_get_data_last(tablename, limit)
+
+        ## Almaceno los ids de todos los resultados.
+        ids = []
+
+        for data in lastData:
+            ids.append(data.id)
+
+        query = table.delete().where(table.c.id.in_(ids))
+        session.execute(query)
+        session.commit()
 
     def get_all_data(self):
         '''
