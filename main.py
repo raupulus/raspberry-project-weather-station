@@ -419,7 +419,7 @@ def upload_data_to_api(apiconnection, dbconnection):
     for name, params in sensors.items():
         ## Parámetros/tuplas desde la base de datos.
         #params_from_db = dbconnection.table_get_data(params['table'])
-        params_from_db = dbconnection.table_get_data_last(params['table'], 10)
+        params_from_db = dbconnection.table_get_data_last(params['table'], 20)
 
         ## Columnas del modelo.
         columns = dbconnection.tables[params['table']].columns.keys()
@@ -438,7 +438,7 @@ def upload_data_to_api(apiconnection, dbconnection):
                 if DEBUG:
                     print('Eliminando de la DB local rachas subidas')
 
-                dbconnection.table_drop_last_elements(params['table'], 10)
+                dbconnection.table_drop_last_elements(params['table'], 20)
         except():
             if DEBUG:
                 print('Error al subir a la api: ', name)
