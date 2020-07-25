@@ -77,6 +77,10 @@ from Models.Sensors.Anemometer import Anemometer
 #######################################
 # #             Variables           # #
 #######################################
+
+# Debug
+DEBUG = os.getenv("DEBUG") == "True"
+
 sleep = time.sleep
 
 # Abro conexión con la base de datos instanciando el modelo que la representa.
@@ -405,7 +409,7 @@ def save_to_db(dbconnection):
             )
 
 
-def save_to_api(apiconnection, dbconnection):
+def upload_data_to_api(apiconnection, dbconnection):
     """
     Obtiene los datos para cada sensor de la DB y los envía a la API
     :param apiconnection:
@@ -414,7 +418,8 @@ def save_to_api(apiconnection, dbconnection):
 
     for name, params in sensors.items():
         ## Parámetros/tuplas desde la base de datos.
-        params_from_db = dbconnection.table_get_data(params['table'])
+        #params_from_db = dbconnection.table_get_data(params['table'])
+        params_from_db = dbconnection.table_get_data_last(params['table'], 10)
 
         ## Columnas del modelo.
         columns = dbconnection.tables[params['table']].columns.keys()
@@ -429,9 +434,14 @@ def save_to_api(apiconnection, dbconnection):
 
             # Limpio los datos de la tabla si se ha subido correctamente.
             if response:
-                dbconnection.table_truncate(params['table'])
+                #dbconnection.table_truncate(params['table'])
+                if DEBUG:
+                    print('Eliminando de la DB local rachas subidas')
+
+                dbconnection.table_drop_last_elements(params['table'], 10)
         except():
-            print('Error al subir a la api: ', name)
+            if DEBUG:
+                print('Error al subir a la api: ', name)
 
 
 def loop():
@@ -458,7 +468,7 @@ def loop():
             n_lecturas = 0
 
             try:
-                save_to_api(apiconnection, dbconnection)
+                upload_data_to_api(apiconnection, dbconnection)
             except():
                 print('Error al subir datos a la api')
 
