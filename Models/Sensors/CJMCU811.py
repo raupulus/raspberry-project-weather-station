@@ -72,7 +72,7 @@ class CJMCU811(AbstractModel):
         """
         value = self.sensor.eco2
         value = float(value if value is not None else 0)
-        return value if 400.0 <= value <= 8192.0 else 400.0
+        return value if 400.0 <= value <= 8192.0 else 416.0
 
     def get_tvoc(self):
         """
