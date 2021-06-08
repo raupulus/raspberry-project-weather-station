@@ -97,7 +97,7 @@ if (os.getenv('S_ANEMOMETER') == 'True') or \
    (os.getenv('S_ANEMOMETER') == 'true'):
 
     # Establezco la ruta a la API
-    api_path = '/ws/winter/add-json'
+    api_path = '/weatherstation/v1/winter/add-json'
 
     sensors['anemometer'] = {
         'sensor': Anemometer(pin=int(os.getenv('S_ANEMOMETER_GPIO'))),
@@ -119,8 +119,8 @@ if (os.getenv('S_ANEMOMETER') == 'True') or \
 if (os.getenv('S_CJMCU811') == 'True') or \
    (os.getenv('S_CJMCU811') == 'true'):
     # Establezco la ruta a la API
-    api_path_eco2 = '/ws/eco2/add-json'
-    api_path_tvoc = '/ws/tvoc/add-json'
+    api_path_eco2 = '/weatherstation/v1/eco2/add-json'
+    api_path_tvoc = '/weatherstation/v1/tvoc/add-json'
 
     # Intento inicializar el sensor, falla pocas veces pero rompe la aplicación.
     try:
@@ -176,7 +176,7 @@ if (os.getenv('S_CJMCU811') == 'True') or \
 if (os.getenv('S_BH1750') == 'True') or \
    (os.getenv('S_BH1750') == 'true'):
     # Establezco la ruta a la API
-    api_path = '/ws/light/add-json'
+    api_path = '/weatherstation/v1/light/add-json'
 
     sensors['bh1750'] = {
         'sensor': BH1750(),
@@ -195,7 +195,7 @@ if (os.getenv('S_BH1750') == 'True') or \
 if (os.getenv('S_VEML6070') == 'True') or \
    (os.getenv('S_VEML6070') == 'true'):
     # Establezco la ruta a la API
-    api_path = '/ws/uva/add-json'
+    api_path = '/weatherstation/v1/uva/add-json'
 
     from Models.Sensors.VEML6070 import VEML6070
 
@@ -216,9 +216,9 @@ if (os.getenv('S_VEML6070') == 'True') or \
 if (os.getenv('S_VEML6075') == 'True') or \
    (os.getenv('S_VEML6075') == 'true'):
     # Establezco la ruta a la API
-    api_path_index = '/ws/uv_index/add-json'
-    api_path_uva = '/ws/uva/add-json'
-    api_path_uvb = '/ws/uvb/add-json'
+    api_path_index = '/weatherstation/v1/uv_index/add-json'
+    api_path_uva = '/weatherstation/v1/uva/add-json'
+    api_path_uvb = '/weatherstation/v1/uvb/add-json'
 
     #from Models.Sensors.VEML6075 import VEML6075
     from Models.Sensors.VEML6075_uv_index import VEML6075_uv_index
@@ -270,9 +270,9 @@ if (os.getenv('S_VEML6075') == 'True') or \
 if (os.getenv('S_BME280') == 'True') or \
    (os.getenv('S_BME280') == 'true'):
     # Establezco la ruta a la API
-    api_path_humidity = '/ws/humidity/add-json'
-    api_path_temperature = '/ws/temperature/add-json'
-    api_path_pressure = '/ws/pressure/add-json'
+    api_path_humidity = '/weatherstation/v1/humidity/add-json'
+    api_path_temperature = '/weatherstation/v1/temperature/add-json'
+    api_path_pressure = '/weatherstation/v1/pressure/add-json'
 
     sensors['bme280_humidity'] = {
         'sensor': BME280_humidity(),
@@ -315,10 +315,10 @@ if (os.getenv('S_BME280') == 'True') or \
 if (os.getenv('S_BME680') == 'True') or \
    (os.getenv('S_BME680') == 'true'):
     # Establezco la ruta a la API
-    api_path_humidity = '/ws/humidity/add-json'
-    api_path_temperature = '/ws/temperature/add-json'
-    api_path_pressure = '/ws/pressure/add-json'
-    api_path_air_quality = '/ws/air_quality/add-json'
+    api_path_humidity = '/weatherstation/v1/humidity/add-json'
+    api_path_temperature = '/weatherstation/v1/temperature/add-json'
+    api_path_pressure = '/weatherstation/v1/pressure/add-json'
+    api_path_air_quality = '/weatherstation/v1/air_quality/add-json'
 
     sensors['bme680_humidity'] = {
         'sensor': BME680_humidity(primary=False),
