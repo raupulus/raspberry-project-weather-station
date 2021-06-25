@@ -102,6 +102,8 @@ sudo apt install python3-dotenv python3-sql python3-sqlalchemy \
 Instalamos dependencias desde el gestor de paquetes de python3, pip3
 ```bash
 pip3 install adafruit-circuitpython-veml6070
+pip3 install bme680
+pip3 install adafruit-circuitpython-veml6075
 ```
 
 ### Asignar tarea cron para ejecutarse automáticamente al iniciar la raspberry.
@@ -124,7 +126,7 @@ ejecuta cuando añada más servicios provocando el retraso del sistema listo)
 
 Añadir la siguiente línea a crontab:
 
-@reboot pi sleep 30 && python3 /home/pi/git/Raspberry-Display-Oled-SSD1306/info.py  >> /tmp/log-raspberry-weather-station.log 2>> /tmp/log-raspberry-weather-station.log
+@reboot pi sleep 30 && python3 /home/pi/git/raspberry-weather-station/main.py >> /tmp/log-raspberry-weather-station.log 2>> /tmp/log-raspberry-weather-station.log
 
 ## Añadir nuevo sensor (añadir pasos para nuevo sensor)
 
