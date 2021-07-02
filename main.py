@@ -49,6 +49,9 @@
 #######################################
 # #       Importar Librerías        # #
 #######################################
+from Models.Apiconnection import Apiconnection
+from Models.Dbconnection import Dbconnection
+
 import time  # Importamos la libreria time --> time.sleep
 import datetime
 import random  # Genera números aleatorios --> random.randrange(1,100)
@@ -56,23 +59,8 @@ import functions as func
 from dotenv import load_dotenv
 import os
 
-## Cargo archivos de configuración desde .env sobreescribiendo variables locales.
+# Cargo archivos de configuración desde .env sobreescribiendo variables locales.
 load_dotenv(override=True)
-
-# Importo el modelo que interactua con la base de datos.
-from Models.Dbconnection import Dbconnection
-from Models.Apiconnection import Apiconnection
-
-# Importo modelos para los sensores
-from Models.Sensors.BME280_humidity import BME280_humidity
-from Models.Sensors.BME280_temperature import BME280_temperature
-from Models.Sensors.BME280_pressure import BME280_pressure
-from Models.Sensors.BME680_humidity import BME680_humidity
-from Models.Sensors.BME680_temperature import BME680_temperature
-from Models.Sensors.BME680_pressure import BME680_pressure
-from Models.Sensors.BME680_air_quality import BME680_air_quality
-from Models.Sensors.BH1750 import BH1750
-from Models.Sensors.Anemometer import Anemometer
 
 #######################################
 # #             Variables           # #
@@ -92,9 +80,39 @@ apiconnection = Apiconnection()
 # Diccionario con todos los sensores utilizados (Declarados en .env)
 sensors = {}
 
-# Anemómetro (leyendo pulsos pin GPIO)
+# Relámpagos (leyendo callback en pin GPIO)
+if (os.getenv('S_CJMCU3935') == 'True') or \
+   (os.getenv('S_CJMCU3935') == 'true'):
+
+    cjmcu3935_gpio = os.getenv('S_CJMCU3935_GPIO') ?? 26
+    cjmcu3935_indoor = (os.getenv('S_CJMCU3935_GPIO') == 'True') or (os.getenv('S_CJMCU3935_GPIO') == 'true') ? True: False
+
+    # Importo modelo
+    from Models.Sensors.CJMCU3935 import CJMCU3935
+
+    # Establezco la ruta a la API
+    api_path = '/weatherstation/v1/lightning/add-json'
+
+    sensors['lightning'] = {
+        'sensor': CJMCU3935(address=0x03, bus=1, mode_debug=False, indoor=cjmcu3935_indoor, pin=cjmcu3935_gpio),
+        'table': Anemometer.table_name,
+        'data': None,
+        'api_path': api_path,
+    }
+
+    # Seteo tabla en el modelo de conexión a la DB.
+    dbconnection.table_set_new(
+        sensors['lightning']['table'],  # Nombre de la tabla.
+        # Modelo de tabla con sus columnas.
+        sensors['lightning']['sensor'].tablemodel()
+    )
+
+# Anemómetro (leyendo callback en pin GPIO)
 if (os.getenv('S_ANEMOMETER') == 'True') or \
    (os.getenv('S_ANEMOMETER') == 'true'):
+
+    # Importo modelo
+    from Models.Sensors.Anemometer import Anemometer
 
     # Establezco la ruta a la API
     api_path = '/weatherstation/v1/winter/add-json'
@@ -112,7 +130,8 @@ if (os.getenv('S_ANEMOMETER') == 'True') or \
     # Seteo tabla en el modelo de conexión a la DB.
     dbconnection.table_set_new(
         sensors['anemometer']['table'],  # Nombre de la tabla.
-        sensors['anemometer']['sensor'].tablemodel()  # Modelo de tabla con sus columnas.
+        # Modelo de tabla con sus columnas.
+        sensors['anemometer']['sensor'].tablemodel()
     )
 
 # Sensor de ECO2 y TVOC
@@ -175,6 +194,10 @@ if (os.getenv('S_CJMCU811') == 'True') or \
 # Sensor de luz BH1750
 if (os.getenv('S_BH1750') == 'True') or \
    (os.getenv('S_BH1750') == 'true'):
+
+    # Importo modelo
+    from Models.Sensors.BH1750 import BH1750
+
     # Establezco la ruta a la API
     api_path = '/weatherstation/v1/light/add-json'
 
@@ -209,7 +232,8 @@ if (os.getenv('S_VEML6070') == 'True') or \
     # Seteo tabla en el modelo de conexión a la DB.
     dbconnection.table_set_new(
         sensors['veml6070']['table'],  # Nombre de la tabla.
-        sensors['veml6070']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['veml6070']['sensor'].tablemodel()
     )
 
 # Sensor de rayos UV/UVA/UVB VEML6075
@@ -249,7 +273,8 @@ if (os.getenv('S_VEML6075') == 'True') or \
     # Seteo tabla en el modelo de conexión a la DB.
     dbconnection.table_set_new(
         sensors['veml6075_index']['table'],  # Nombre de la tabla.
-        sensors['veml6075_index']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['veml6075_index']['sensor'].tablemodel()
     )
 
     # Seteo tabla en el modelo de conexión a la DB.
@@ -298,22 +323,35 @@ if (os.getenv('S_BME280') == 'True') or \
     # Seteo tabla en el modelo de conexión a la DB.
     dbconnection.table_set_new(
         sensors['bme280_humidity']['table'],  # Nombre de la tabla.
-        sensors['bme280_humidity']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['bme280_humidity']['sensor'].tablemodel()
     )
 
     dbconnection.table_set_new(
         sensors['bme280_temperature']['table'],  # Nombre de la tabla.
-        sensors['bme280_temperature']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['bme280_temperature']['sensor'].tablemodel()
     )
 
     dbconnection.table_set_new(
         sensors['bme280_pressure']['table'],  # Nombre de la tabla.
-        sensors['bme280_pressure']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['bme280_pressure']['sensor'].tablemodel()
     )
 
 # Sensor de temperatura/presión/humedad
 if (os.getenv('S_BME680') == 'True') or \
    (os.getenv('S_BME680') == 'true'):
+
+    # Importo modelos para las partes del sensor.
+    from Models.Sensors.BME280_humidity import BME280_humidity
+    from Models.Sensors.BME280_temperature import BME280_temperature
+    from Models.Sensors.BME280_pressure import BME280_pressure
+    from Models.Sensors.BME680_humidity import BME680_humidity
+    from Models.Sensors.BME680_temperature import BME680_temperature
+    from Models.Sensors.BME680_pressure import BME680_pressure
+    from Models.Sensors.BME680_air_quality import BME680_air_quality
+
     # Establezco la ruta a la API
     api_path_humidity = '/weatherstation/v1/humidity/add-json'
     api_path_temperature = '/weatherstation/v1/temperature/add-json'
@@ -351,23 +389,28 @@ if (os.getenv('S_BME680') == 'True') or \
     # Seteo tabla en el modelo de conexión a la DB.
     dbconnection.table_set_new(
         sensors['bme680_humidity']['table'],  # Nombre de la tabla.
-        sensors['bme680_humidity']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['bme680_humidity']['sensor'].tablemodel()
     )
 
     dbconnection.table_set_new(
         sensors['bme680_temperature']['table'],  # Nombre de la tabla.
-        sensors['bme680_temperature']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['bme680_temperature']['sensor'].tablemodel()
     )
 
     dbconnection.table_set_new(
         sensors['bme680_pressure']['table'],  # Nombre de la tabla.
-        sensors['bme680_pressure']['sensor'].tablemodel()  # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['bme680_pressure']['sensor'].tablemodel()
     )
 
     dbconnection.table_set_new(
         sensors['bme680_air_quality']['table'],  # Nombre de la tabla.
-        sensors['bme680_air_quality']['sensor'].tablemodel() # Modelo de tabla y columnas.
+        # Modelo de tabla y columnas.
+        sensors['bme680_air_quality']['sensor'].tablemodel()
     )
+
 
 def read_sensor(method):
     """
@@ -402,11 +445,24 @@ def save_to_db(dbconnection):
     for name, params in sensors.items():
         # Solo almaceno en la DB cuando los datos de lecturas no son "None"
         if params['data'] is not None:
-            dbconnection.table_save_data(
-                sensorname=name,
-                tablename=sensors[name]['table'],
-                params=params['data']
-            )
+
+            if isinstance(params['data'], list) and params['data'].count():
+                
+                for data in params['data']:
+
+                    dbconnection.table_save_data(
+                        sensorname=name,
+                        tablename=sensors[name]['table'],
+                        params=params['data']
+                    )
+
+            else:
+                
+                dbconnection.table_save_data(
+                    sensorname=name,
+                    tablename=sensors[name]['table'],
+                    params=params['data']
+                )
 
 
 def upload_data_to_api(apiconnection, dbconnection):
@@ -417,11 +473,11 @@ def upload_data_to_api(apiconnection, dbconnection):
     """
 
     for name, params in sensors.items():
-        ## Parámetros/tuplas desde la base de datos.
+        # Parámetros/tuplas desde la base de datos.
         #params_from_db = dbconnection.table_get_data(params['table'])
         params_from_db = dbconnection.table_get_data_last(params['table'], 20)
 
-        ## Columnas del modelo.
+        # Columnas del modelo.
         columns = dbconnection.tables[params['table']].columns.keys()
 
         try:
@@ -434,7 +490,7 @@ def upload_data_to_api(apiconnection, dbconnection):
 
             # Limpio los datos de la tabla si se ha subido correctamente.
             if response:
-                #dbconnection.table_truncate(params['table'])
+                # dbconnection.table_truncate(params['table'])
                 if DEBUG:
                     print('Eliminando de la DB local rachas subidas')
 
@@ -452,7 +508,6 @@ def loop():
         n_lecturas = n_lecturas + 1
 
         print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
-
 
         # Guardo el momento que inicia lectura.
         marca_inicio = datetime.datetime.now(tz=None)
