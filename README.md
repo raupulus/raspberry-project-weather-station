@@ -2,11 +2,11 @@
 
 Proyecto de estación meteorológica con Raspberry Pi
 
-Este proyecto se describe para la distribución Raspbian stable, con otros 
+Este proyecto se describe para la distribución Raspbian stable, con otros
 sistemas operativos o distribuciones pueden variar dependencias y tal vez
 el código.
 
-## Hardware 
+## Hardware
 
 El hardware con el que ha sido utilizado y probado, esto no descarta funcionar
 en otro tipo de hardware similar o con pequeñas modificaciones.
@@ -36,24 +36,24 @@ en otro tipo de hardware similar o con pequeñas modificaciones.
 
 ## Models
 
-- BH1750 → Modelo que representa al sensor BH1750 para medir la cantidad de 
-luz en medida **lux**
-- BME280 → Modelo que representa al sensor bosh BME280 para medir 
-temperatura, humedad y presión.
+- BH1750 → Modelo que representa al sensor BH1750 para medir la cantidad de
+  luz en medida **lux**
+- BME280 → Modelo que representa al sensor bosh BME280 para medir
+  temperatura, humedad y presión.
 - BME280_humidity → Modelo que representa solo la humedad para el sensor bosh
 - BME280_temperature → Modelo que representa solo la temperatura para el sensor
- bosh
+  bosh
 - BME280_pressure → Modelo que representa solo la presión para el sensor bosh
-- Anemometer → Modelo que representa la lectura de velocidad del viento a 
- través de un anemómetro que envía pulsos por un pin GPIO
- 
+- Anemometer → Modelo que representa la lectura de velocidad del viento a
+  través de un anemómetro que envía pulsos por un pin GPIO
+
 ## Instalación
 
 A continuación describo los pasos para instalar que he ido usando durante el
 desarrollo de la aplicación, será necesario adaptar a vuestra situación cada
 paso.
 
-Para el desarrollo trabajo en el directorio **git** dentro del **home** del 
+Para el desarrollo trabajo en el directorio **git** dentro del **home** del
 usuario por defecto: **/home/pi/git/raspberry-weather-station**
 
 ### Crear usuario y base de datos sensor_data
@@ -94,16 +94,18 @@ git clone https://gitlab.com/fryntiz/raspberry-weather-station.git
 Instalamos las dependencias desde el gestor de paquetes:
 
 ```bash
-sudo apt install python3-dotenv python3-sql python3-sqlalchemy \ 
-    python3-psycopg2 python3-smbus python3-requests python3-rpi.gpio \ 
-    python3-pip 
+sudo apt install python3-dotenv python3-sql python3-sqlalchemy \
+    python3-psycopg2 python3-smbus python3-requests python3-rpi.gpio \
+    python3-pip
 ```
 
 Instalamos dependencias desde el gestor de paquetes de python3, pip3
+
 ```bash
 pip3 install adafruit-circuitpython-veml6070
 pip3 install bme680
 pip3 install adafruit-circuitpython-veml6075
+pip3 install RPi_AS3935
 ```
 
 ### Asignar tarea cron para ejecutarse automáticamente al iniciar la raspberry.
@@ -116,12 +118,12 @@ usuario.
 
 Adicionalmente guardo toda la salida en un log temporal dentro de **/tmp**,
 esto tiene el inconveniente de que se pierde al reiniciar. Lo mantengo así
-pues solo lo utilizo para depurar la salida y ver errores que pueda ir 
+pues solo lo utilizo para depurar la salida y ver errores que pueda ir
 corrigiendo. Puedes utilizar cualquier directorio para mantener permanente el
 log.
 
 Nótese que al crontab le asigno un retardo de 30 segundos para dejar tiempo a
-terminar de cargar el sistema (no era necesario pero así aseguro que se 
+terminar de cargar el sistema (no era necesario pero así aseguro que se
 ejecuta cuando añada más servicios provocando el retraso del sistema listo)
 
 Añadir la siguiente línea a crontab:
@@ -130,6 +132,6 @@ Añadir la siguiente línea a crontab:
 
 ## Añadir nuevo sensor (añadir pasos para nuevo sensor)
 
-Está en proceso de refactorización de código para añadir un nuevo sensor de 
-forma más sencilla desde un único lugar y recorrer todos los sensores de forma 
+Está en proceso de refactorización de código para añadir un nuevo sensor de
+forma más sencilla desde un único lugar y recorrer todos los sensores de forma
 dinámica (por ejemplo en un array con el nombre de su tabla para db)
