@@ -47,7 +47,7 @@ from RPi_AS3935.RPi_AS3935 import RPi_AS3935
 import datetime
 import time
 import os
-from AbstractModel import AbstractModel
+from Models.Sensors.AbstractModel import AbstractModel
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
@@ -146,7 +146,7 @@ class CJMCU3935(AbstractModel):
         elif reason == 0x08:
 
             # En este punto, parece una detección correcta y la guardo.
-            self.lightnings.push({
+            self.lightnings.append({
                 "strike": self.strike(),
                 "distance": self.distance(),
                 "type": self.type(),
@@ -232,8 +232,15 @@ class CJMCU3935(AbstractModel):
         :return:
         """
 
-        if self.lightnings.count():
-            return self.lightnings
+        print('Entra en get_all_datas')
+
+        if self.lightnings and len(self.lightnings):
+            print('entra if')
+            reads = self.lightnings
+            print('guardo lightnings')
+            self.lightnings = []
+
+            return reads
 
         return None
 

@@ -84,8 +84,15 @@ sensors = {}
 if (os.getenv('S_CJMCU3935') == 'True') or \
    (os.getenv('S_CJMCU3935') == 'true'):
 
-    cjmcu3935_gpio = os.getenv('S_CJMCU3935_GPIO') ?? 26
-    cjmcu3935_indoor = (os.getenv('S_CJMCU3935_GPIO') == 'True') or (os.getenv('S_CJMCU3935_GPIO') == 'true') ? True: False
+    if os.getenv('S_CJMCU3935_GPIO') != None:
+        cjmcu3935_gpio = int(os.getenv('S_CJMCU3935_GPIO'))
+    else:
+        cjmcu3935_gpio = 26
+
+    if (os.getenv('S_CJMCU3935_INDOOR') == 'True') or (os.getenv('S_CJMCU3935_INDOOR') == 'true'):
+        cjmcu3935_indoor = True
+    else:
+        cjmcu3935_indoor = False
 
     # Importo modelo
     from Models.Sensors.CJMCU3935 import CJMCU3935
@@ -95,7 +102,7 @@ if (os.getenv('S_CJMCU3935') == 'True') or \
 
     sensors['lightning'] = {
         'sensor': CJMCU3935(address=0x03, bus=1, mode_debug=False, indoor=cjmcu3935_indoor, pin=cjmcu3935_gpio),
-        'table': Anemometer.table_name,
+        'table': CJMCU3935.table_name,
         'data': None,
         'api_path': api_path,
     }
@@ -433,7 +440,12 @@ def read_sensors():
     """
     for name, params in sensors.items():
         print('Leyendo sensor: ', name)
+
+        print('ES 1')
+        datas = read_sensor(params['sensor'].get_all_datas)
+        print('ES 2')
         params['data'] = read_sensor(params['sensor'].get_all_datas)
+        print('ES 3')
 
 
 def save_to_db(dbconnection):
@@ -447,7 +459,7 @@ def save_to_db(dbconnection):
         if params['data'] is not None:
 
             if isinstance(params['data'], list) and params['data'].count():
-                
+
                 for data in params['data']:
 
                     dbconnection.table_save_data(
@@ -457,7 +469,7 @@ def save_to_db(dbconnection):
                     )
 
             else:
-                
+
                 dbconnection.table_save_data(
                     sensorname=name,
                     tablename=sensors[name]['table'],
