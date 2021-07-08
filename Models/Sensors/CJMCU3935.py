@@ -89,10 +89,12 @@ class CJMCU3935(AbstractModel):
             self.msg(
                 'Inicializado sensor de rayos y esperando detectar campos electromagnéticos para procesarlos.')
 
+            """
             fo = open("log_rayos.log", "a+")
             str = 'Inicializado sensor de rayos y esperando detectar campos electromagnéticos para procesarlos.'
             fo.write(str + os.linesep)
             fo.close()
+            """
 
     def handle_interrupt(self, channel):
         """
@@ -107,15 +109,22 @@ class CJMCU3935(AbstractModel):
         now = datetime.datetime.utcnow()
 
         reason = sensor.get_interrupt()
+
+        print('--------')
+        print('reason:' + str(reason))
+        print('--------')
         if reason == 0x01:
             sensor.raise_noise_floor()
 
             if self.has_debug:
+                print('El nivel de ruido es demasiado alto → Ajustando')
+
                 self.msg('--------------------------')
                 self.msg('El nivel de ruido es demasiado alto → Ajustando')
                 self.msg('Timestamp: ' + str(now))
                 self.msg('--------------------------')
 
+                """
                 fo = open("log_rayos.log", "a+")
                 fo.write('--------------------------' + os.linesep)
                 fo.write(
@@ -124,9 +133,11 @@ class CJMCU3935(AbstractModel):
                 fo.write('--------------------------' + os.linesep)
                 fo.write('' + os.linesep)
                 fo.close()
+                """
 
         elif reason == 0x04:
             sensor.set_mask_disturber(True)
+            print('Se ha detectado una perturbación → Enmascarándola')
 
             if self.has_debug:
                 self.msg('--------------------------')
@@ -134,6 +145,7 @@ class CJMCU3935(AbstractModel):
                 self.msg('Timestamp: ' + str(now))
                 self.msg('--------------------------')
 
+                """
                 fo = open("log_rayos.log", "a+")
                 fo.write('--------------------------' + os.linesep)
                 fo.write(
@@ -142,8 +154,15 @@ class CJMCU3935(AbstractModel):
                 fo.write('--------------------------' + os.linesep)
                 fo.write('' + os.linesep)
                 fo.close()
+                """
 
         elif reason == 0x08:
+            print('--------')
+            print('Detectado relámpago')
+            print('algo detectado')
+            print('rayo detectado')
+            print(str(self.sensor.get_energy()))
+            print('--------')
 
             # En este punto, parece una detección correcta y la guardo.
             self.lightnings.append({
@@ -152,6 +171,9 @@ class CJMCU3935(AbstractModel):
                 "type": self.type(),
                 "energy": self.energy(),
             })
+
+            print('datos:')
+            print(self.lightnings)
 
             if self.has_debug:
                 distance = sensor.get_distance()
@@ -174,6 +196,7 @@ class CJMCU3935(AbstractModel):
                 self.msg('--------------------------')
 
                 # Añado información al archivo de log común
+                """
                 fo = open("log_rayos.log", "a+")
                 fo.write('--------------------------' + os.linesep)
                 fo.write('¡Se ha detectado un posible RAYO!' + os.linesep)
@@ -201,10 +224,12 @@ class CJMCU3935(AbstractModel):
                 fo.write(str(self.sensor.get_distance()) + ';')  # Distance
                 fo.write(str(now) + ';')  # Timestamp
                 fo.close()
+                """
         else:
             if self.has_debug:
                 self.msg('Se ha detectado algo no controlado aún')
 
+                """
                 fo = open("log_rayos.log", "a+")
                 fo.write('--------------------------' + os.linesep)
                 fo.write('Se ha detectado algo no controlado aún' + os.linesep)
@@ -213,6 +238,7 @@ class CJMCU3935(AbstractModel):
                 fo.write('--------------------------' + os.linesep)
                 fo.write('' + os.linesep)
                 fo.close()
+                """
 
     def strike(self):
         return None
@@ -235,7 +261,8 @@ class CJMCU3935(AbstractModel):
         print('Entra en get_all_datas')
 
         if self.lightnings and len(self.lightnings):
-            print('entra if')
+            print('Entra en If de datos:')
+            print(self.lightnings)
             reads = self.lightnings
             print('guardo lightnings')
             self.lightnings = []

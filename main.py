@@ -101,7 +101,7 @@ if (os.getenv('S_CJMCU3935') == 'True') or \
     api_path = '/weatherstation/v1/lightning/add-json'
 
     sensors['lightning'] = {
-        'sensor': CJMCU3935(address=0x03, bus=1, mode_debug=False, indoor=cjmcu3935_indoor, pin=cjmcu3935_gpio),
+        'sensor': CJMCU3935(address=0x03, bus=1, mode_debug=DEBUG, indoor=cjmcu3935_indoor, pin=cjmcu3935_gpio),
         'table': CJMCU3935.table_name,
         'data': None,
         'api_path': api_path,
@@ -442,9 +442,11 @@ def read_sensors():
         print('Leyendo sensor: ', name)
 
         print('ES 1')
-        datas = read_sensor(params['sensor'].get_all_datas)
+        #datas = read_sensor(params['sensor'].get_all_datas)
+        #print(datas)
         print('ES 2')
         params['data'] = read_sensor(params['sensor'].get_all_datas)
+        print(params['data'])
         print('ES 3')
 
 
