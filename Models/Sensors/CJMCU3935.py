@@ -110,9 +110,6 @@ class CJMCU3935(AbstractModel):
 
         reason = sensor.get_interrupt()
 
-        print('--------')
-        print('reason:' + str(reason))
-        print('--------')
         if reason == 0x01:
             sensor.raise_noise_floor()
 
@@ -137,7 +134,6 @@ class CJMCU3935(AbstractModel):
 
         elif reason == 0x04:
             sensor.set_mask_disturber(True)
-            print('Se ha detectado una perturbación → Enmascarándola')
 
             if self.has_debug:
                 self.msg('--------------------------')
@@ -157,13 +153,6 @@ class CJMCU3935(AbstractModel):
                 """
 
         elif reason == 0x08:
-            print('--------')
-            print('Detectado relámpago')
-            print('algo detectado')
-            print('rayo detectado')
-            print(str(self.sensor.get_energy()))
-            print('--------')
-
             # En este punto, parece una detección correcta y la guardo.
             self.lightnings.append({
                 "strike": self.strike(),
@@ -172,15 +161,13 @@ class CJMCU3935(AbstractModel):
                 "energy": self.energy(),
             })
 
-            print('datos:')
-            print(self.lightnings)
-
             if self.has_debug:
                 distance = sensor.get_distance()
 
                 self.msg('--------------------------')
                 self.msg('¡Se ha detectado un posible RAYO!')
                 self.msg('Timestamp: ' + str(now))
+                print('rayo detectado')
                 self.msg(
                     "Está a " + str(distance) + "km de distancia. (%s)" % now)
                 self.msg("------------------------")
@@ -258,13 +245,8 @@ class CJMCU3935(AbstractModel):
         :return:
         """
 
-        print('Entra en get_all_datas')
-
         if self.lightnings and len(self.lightnings):
-            print('Entra en If de datos:')
-            print(self.lightnings)
             reads = self.lightnings
-            print('guardo lightnings')
             self.lightnings = []
 
             return reads
@@ -317,8 +299,10 @@ class CJMCU3935(AbstractModel):
         """
         datas = self.get_all_datas()
 
+        """
         if datas:
             print('Pintando debug para CJMCU 3935')
 
             for sensor, data in datas.items():
                 print('Valor del sensor ' + str(sensor) + ': ' + str(data))
+        """

@@ -301,6 +301,12 @@ if (os.getenv('S_VEML6075') == 'True') or \
 # Sensor de temperatura/presión/humedad
 if (os.getenv('S_BME280') == 'True') or \
    (os.getenv('S_BME280') == 'true'):
+
+    # Importo modelos para las partes del sensor.
+    from Models.Sensors.BME280_humidity import BME280_humidity
+    from Models.Sensors.BME280_temperature import BME280_temperature
+    from Models.Sensors.BME280_pressure import BME280_pressure
+
     # Establezco la ruta a la API
     api_path_humidity = '/weatherstation/v1/humidity/add-json'
     api_path_temperature = '/weatherstation/v1/temperature/add-json'
@@ -350,10 +356,6 @@ if (os.getenv('S_BME280') == 'True') or \
 if (os.getenv('S_BME680') == 'True') or \
    (os.getenv('S_BME680') == 'true'):
 
-    # Importo modelos para las partes del sensor.
-    from Models.Sensors.BME280_humidity import BME280_humidity
-    from Models.Sensors.BME280_temperature import BME280_temperature
-    from Models.Sensors.BME280_pressure import BME280_pressure
     from Models.Sensors.BME680_humidity import BME680_humidity
     from Models.Sensors.BME680_temperature import BME680_temperature
     from Models.Sensors.BME680_pressure import BME680_pressure
@@ -439,15 +441,14 @@ def read_sensors():
     Lee todos los sensores y los añade al diccionario.
     """
     for name, params in sensors.items():
-        print('Leyendo sensor: ', name)
+        if DEBUG:
+            print('Leyendo sensor: ', name)
 
-        print('ES 1')
-        #datas = read_sensor(params['sensor'].get_all_datas)
-        #print(datas)
-        print('ES 2')
         params['data'] = read_sensor(params['sensor'].get_all_datas)
-        print(params['data'])
-        print('ES 3')
+
+        if DEBUG:
+            print('Datos obtenidos:')
+            print(params['data'])
 
 
 def save_to_db(dbconnection):
@@ -456,18 +457,31 @@ def save_to_db(dbconnection):
     :param dbconnection:
     """
 
+    if DEBUG:
+        print('Entra en save_to_db')
+
     for name, params in sensors.items():
         # Solo almaceno en la DB cuando los datos de lecturas no son "None"
         if params['data'] is not None:
 
-            if isinstance(params['data'], list) and params['data'].count():
+            if DEBUG:
+                print('Hay datos para el sensor: ' + str(name))
+
+            if isinstance(params['data'], list) and len(params['data']):
+
+                if DEBUG:
+                    print('Es de tipo *list* y contiene datos')
 
                 for data in params['data']:
+
+                    if DEBUG:
+                        print('Guardando estos datos:')
+                        print(data)
 
                     dbconnection.table_save_data(
                         sensorname=name,
                         tablename=sensors[name]['table'],
-                        params=params['data']
+                        params=data
                     )
 
             else:
@@ -555,7 +569,9 @@ def loop():
     # Acciones tras terminar con error
     # TODO → controlar interrupciones y excepciones para limpiar/reiniciar todo.
     dbconnection.close_connection()
-    anemometer.stop_read()
+
+    if anemometer:
+        anemometer.stop_read()
 
 
 def main():
