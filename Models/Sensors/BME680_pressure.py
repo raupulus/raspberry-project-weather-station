@@ -50,8 +50,14 @@ class BME680_pressure(BME680):
         Devuelve un diccionario con los datos (coincidiendo con el tablemodel)
         según lo tomado con el sensor.
         """
+
+        pressure = self.read_pressure()
+
+        if pressure is None:
+            return None
+
         return {
-            'value': self.read_pressure(),
+            'value': pressure,
         }
 
     def tablemodel(self):
@@ -84,4 +90,3 @@ class BME680_pressure(BME680):
         consola.
         """
         print('La presión actual es de: ', self.read_pressure())
-

@@ -51,40 +51,82 @@ import board
 import adafruit_veml6075
 from Models.Sensors.AbstractModel import AbstractModel
 
+from Models.Sensors.BH1750 import BH1750
+
+from time import sleep
+
 
 class VEML6075(AbstractModel):
     table_name = 'table_uv'
     sensor = None
+    sensorLight = None
 
     def __init__(self, integration_time=100):
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = adafruit_veml6075.VEML6075(
             i2c, integration_time=integration_time)
 
+        # TODO: Check if el sensor de luz está como True en el .env
+        self.sensorsLight = BH1750()
+
+    def get_lumens(self, luxRead=None):
+        """
+        Obtiene la cantidad de lúmenes.
+        :return: Lúmenes or None.
+        """
+        sleep(0.12)
+
+        lux = luxRead if luxRead else self.get_lux()
+        # area = 0.25e-3 * 0.3e-3  # 0.25cm x 0.3cm
+        area = 0.25 * 0.3  # 0.25mm x 0.3mm
+        lumens = lux * area
+
+        return lumens if lumens >= 0.0 else 0.0
+
+    def get_lux(self):
+        """
+        Obtiene la cantidad de lux.
+        :return:
+        """
+        sleep(0.12)
+
+        value = self.sensorsLight.read_light()
+
+        return float(value) if value >= 0.0 else 0.0
+
     def get_uv_index(self):
         """
         Obtiene el índice UV.
         :return: Devuelve el índice UV.
         """
+        sleep(0.12)
+
         value = self.sensor.uv_index
 
-        return value if value >= 0.0 else 0.0
+        return float(value) if value >= 0.0 else 0.0
 
     def get_uva(self):
         """
         Obtiene el índice UVA.
         :return: Devuelve el índice UVA.
         """
+        sleep(0.12)
+
         value = self.sensor.uva
 
-        return value if value >= 0.0 else 0.0
+        return float(value) if value >= 0.0 else 0.0
 
     def get_uvb(self):
         """
         Obtiene el índice UVB.
         :return: Devuelve el índice UVA.
         """
+
+        sleep(0.12)
+
         value = self.sensor.uvb
+
+        print('OOOOOOOODHJKDG FKHJDS GFHJK: ', value)
 
         return value if value >= 0.0 else 0.0
 
@@ -93,15 +135,45 @@ class VEML6075(AbstractModel):
         Obtiene la lectura del índice en bruto y el nivel de riesgo establecido.
         :return:
         """
+
+        lux = self.get_lux()
+        lumens = self.get_lumens(lux)
+        index = self.get_uv_index()
+        uva = self.get_uva()
+        uvb = self.get_uvb()
+
+        if lumens is None or index is None or uva is None or uvb is None or lux is None:
+            return None
+
         return {
-            'uv_index': self.get_uv_index(),
-            'uva': self.get_uva(),
-            'uvb': self.get_uvb(),
+            'lumens': lumens,
+            'lux': lux,
+            'index': index,
+            'uva': uva,
+            'uvb': uvb,
         }
 
     def tablemodel(self):
         return {
-            'uv_index': {
+            'lumens': {
+                'type': 'Numeric',
+                'params': {
+                    'precision': 15,
+                    'asdecimal': True,
+                    'scale': 4
+                },
+                'others': None,
+            },
+            'lux': {
+                'type': 'Numeric',
+                'params': {
+                    'precision': 15,
+                    'asdecimal': True,
+                    'scale': 4
+                },
+                'others': None,
+            },
+            'index': {
                 'type': 'Numeric',
                 'params': {
                     'precision': 15,

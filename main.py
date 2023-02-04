@@ -203,6 +203,7 @@ if (os.getenv('S_CJMCU811') == 'True') or \
 
 
 # Sensor de luz BH1750
+"""
 if (os.getenv('S_BH1750') == 'True') or \
    (os.getenv('S_BH1750') == 'true'):
 
@@ -224,6 +225,7 @@ if (os.getenv('S_BH1750') == 'True') or \
         sensors['bh1750']['table'],  # Nombre de la tabla.
         sensors['bh1750']['sensor'].tablemodel()  # Modelo de tabla y columnas.
     )
+"""
 
 # Sensor de rayos UV VEML6070
 if (os.getenv('S_VEML6070') == 'True') or \
@@ -251,57 +253,25 @@ if (os.getenv('S_VEML6070') == 'True') or \
 if (os.getenv('S_VEML6075') == 'True') or \
    (os.getenv('S_VEML6075') == 'true'):
     # Establezco la ruta a la API
-    api_path_index = '/weatherstation/v1/uv_index/add-json'
-    api_path_uva = '/weatherstation/v1/uva/add-json'
-    api_path_uvb = '/weatherstation/v1/uvb/add-json'
 
+    api_path = '/weatherstation/v1/light/add-json'
 
-    #from Models.Sensors.VEML6075 import VEML6075
-    from Models.Sensors.VEML6075_uv_index import VEML6075_uv_index
-    from Models.Sensors.VEML6075_uva import VEML6075_uva
-    from Models.Sensors.VEML6075_uvb import VEML6075_uvb
+    from Models.Sensors.VEML6075 import VEML6075
 
-    sensors['veml6075_index'] = {
-        'sensor': VEML6075_uv_index(),
-        'table': VEML6075_uv_index.table_name,
+    sensors['veml6075'] = {
+        'sensor': VEML6075(),
+        'table': VEML6075.table_name,
         'data': None,
-        'api_path': api_path_uva,
-    }
-
-    sensors['veml6075_uva'] = {
-        'sensor': VEML6075_uva(),
-        'table': VEML6075_uva.table_name,
-        'data': None,
-        'api_path': api_path_index,
-    }
-
-    sensors['veml6075_uvb'] = {
-        'sensor': VEML6075_uvb(),
-        'table': VEML6075_uvb.table_name,
-        'data': None,
-        'api_path': api_path_uvb,
+        'api_path': api_path,
     }
 
     # Seteo tabla en el modelo de conexión a la DB.
     dbconnection.table_set_new(
-        sensors['veml6075_index']['table'],  # Nombre de la tabla.
+        sensors['veml6075']['table'],  # Nombre de la tabla.
         # Modelo de tabla y columnas.
-        sensors['veml6075_index']['sensor'].tablemodel()
+        sensors['veml6075']['sensor'].tablemodel()
     )
 
-    # Seteo tabla en el modelo de conexión a la DB.
-    dbconnection.table_set_new(
-        sensors['veml6075_uva']['table'],  # Nombre de la tabla.
-        sensors['veml6075_uva']['sensor'].tablemodel()
-        # Modelo de tabla y columnas.
-    )
-
-    # Seteo tabla en el modelo de conexión a la DB.
-    dbconnection.table_set_new(
-        sensors['veml6075_uvb']['table'],  # Nombre de la tabla.
-        sensors['veml6075_uvb']['sensor'].tablemodel()
-        # Modelo de tabla y columnas.
-    )
 
 # Sensor de temperatura/presión/humedad
 if (os.getenv('S_BME280') == 'True') or \
@@ -556,6 +526,9 @@ def loop():
             n_lecturas = 0
 
             try:
+                if DEBUG:
+                    print('Subiendo datos a la API')
+
                 upload_data_to_api(apiconnection, dbconnection)
             except ():
                 print('Error al subir datos a la api')

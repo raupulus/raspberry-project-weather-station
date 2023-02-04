@@ -66,6 +66,9 @@ load_dotenv(override=True)
 #######################################
 sleep = time.sleep
 
+# Debug
+DEBUG = os.getenv("DEBUG") == "True"
+
 #######################################
 # #             Funciones           # #
 #######################################
@@ -74,7 +77,7 @@ sleep = time.sleep
 class Apiconnection:
     API_URL = os.getenv("API_URL")
     API_TOKEN = os.getenv("API_TOKEN")
-    DEVICE_ID = os.getenv("DEVICE_ID")
+    DEVICE_ID = os.getenv("HARDWARE_ID")
 
     def requests_retry_session(
             retries=3,
@@ -111,13 +114,15 @@ class Apiconnection:
 
         url = self.API_URL
         token = self.API_TOKEN
-        #hardware_device_id = self.DEVICE_ID
         full_url = url + path
 
         data = {
             'data': datas_json,
             'info': 'Enviado desde Raspberry Pi'
         }
+
+        if DEBUG:
+            print(datas_json)
 
         headers = {
             'Content-type': 'application/json',
@@ -133,8 +138,9 @@ class Apiconnection:
                 timeout=30
             )
 
-            print('Respuesta de API: ', req.status_code)
-            #print('Recibido: ', req.text)
+            if DEBUG:
+                print('Respuesta de API: ', req.status_code)
+                print('Recibido: ', req.text)
 
             # Guardado correctamente 201, con errores 200, mal 500
             if int(req.status_code) == 201:
@@ -172,9 +178,10 @@ class Apiconnection:
                     tupla.update({columns[iteracion]: cell})
 
             tupla.update({'hardware_device_id': self.DEVICE_ID})
+
+            print(self.DEVICE_ID)
+
             result.append(tupla)
-
-
 
         return json.dumps(
             result,
@@ -192,8 +199,12 @@ class Apiconnection:
         :param datas: Datos a enviar
         """
         if datas:
-            print('Subiendo sensor: ' + sensorname + ', ruta de api: ' + path)
+            if DEBUG:
+                print('Subiendo sensor: ' + sensorname +
+                      ', ruta de api: ' + path)
+
             datas_json = self.parse_to_json(datas, columns)
+
             #print('Datos formateados en JSON:', datas_json)
             result_send = self.send(path, datas_json)
 

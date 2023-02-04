@@ -50,8 +50,15 @@ class BME680_temperature(BME680):
         Devuelve un diccionario con los datos (coincidiendo con el tablemodel)
         según lo tomado con el sensor.
         """
+
+        temperature = self.read_temperature()
+
+        if temperature is None:
+            return None
+
+
         return {
-            'value': self.read_temperature(),
+            'value': temperature,
         }
 
     def tablemodel(self):
@@ -84,4 +91,3 @@ class BME680_temperature(BME680):
         consola.
         """
         print('La temperatura actual es de: ', self.read_temperature())
-

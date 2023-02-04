@@ -12,7 +12,7 @@
 # Create Date: 2020
 #
 # Revision 0.01 - File Created
-# Additional Comments: 
+# Additional Comments:
 
 # @copyright  Copyright © 2020 Raúl Caro Pastorino
 # @license    https://wwww.gnu.org/licenses/gpl.txt
@@ -50,8 +50,14 @@ class BME680_humidity(BME680):
         Devuelve un diccionario con los datos (coincidiendo con el tablemodel)
         según lo tomado con el sensor.
         """
+
+        humidity = self.read_humidity()
+
+        if humidity is None:
+            return None
+
         return {
-            'value': self.read_humidity(),
+            'value': humidity,
         }
 
     def tablemodel(self):
@@ -84,4 +90,3 @@ class BME680_humidity(BME680):
         consola.
         """
         print('La humedad actual es de: ', self.read_humidity())
-

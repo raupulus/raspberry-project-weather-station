@@ -50,9 +50,16 @@ class BME680_air_quality(BME680):
         Devuelve un diccionario con los datos (coincidiendo con el tablemodel)
         según lo tomado con el sensor.
         """
+
+        gas_resistance = self.read_gas_resistance()
+        air_quality = self.read_air_quality()
+
+        if gas_resistance is None or air_quality is None:
+            return None
+
         return {
-            'gas_resistance': self.read_gas_resistance(),
-            'air_quality': self.read_air_quality(),
+            'gas_resistance': gas_resistance,
+            'air_quality': air_quality,
         }
 
     def tablemodel(self):

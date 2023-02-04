@@ -23,7 +23,7 @@ class BH1750:
     ONE_TIME_HIGH_RES_MODE = 0x20
     bus = smbus.SMBus(1)  # Rev 2 Pi uses 1
 
-    ## Parámetros para devolver datos del modelo de base de datos
+    # Parámetros para devolver datos del modelo de base de datos
     table_name = 'table_light'
 
     def __init__(self, device=0x23):
@@ -42,6 +42,9 @@ class BH1750:
         Realiza la lectura del sensor.
         :return:
         """
+
+        time.sleep(0.12)
+
         data = self.bus.read_i2c_block_data(
             self.DEVICE,
             self.ONE_TIME_HIGH_RES_MODE
