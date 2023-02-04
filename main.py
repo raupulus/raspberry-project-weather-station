@@ -66,10 +66,14 @@ load_dotenv(override=True)
 # #             Variables           # #
 #######################################
 
+sleep = time.sleep
+
 # Debug
 DEBUG = os.getenv("DEBUG") == "True"
 
-sleep = time.sleep
+# Intervalo de tiempo entre lecturas de sensores.
+READ_INTERVAL = int(os.getenv("READ_INTERVAL"))
+
 
 # Abro conexión con la base de datos instanciando el modelo que la representa.
 dbconnection = Dbconnection()
@@ -250,6 +254,7 @@ if (os.getenv('S_VEML6075') == 'True') or \
     api_path_index = '/weatherstation/v1/uv_index/add-json'
     api_path_uva = '/weatherstation/v1/uva/add-json'
     api_path_uvb = '/weatherstation/v1/uvb/add-json'
+
 
     #from Models.Sensors.VEML6075 import VEML6075
     from Models.Sensors.VEML6075_uv_index import VEML6075_uv_index
@@ -523,7 +528,7 @@ def upload_data_to_api(apiconnection, dbconnection):
                     print('Eliminando de la DB local rachas subidas')
 
                 dbconnection.table_drop_last_elements(params['table'], 20)
-        except():
+        except ():
             if DEBUG:
                 print('Error al subir a la api: ', name)
 
@@ -547,12 +552,12 @@ def loop():
         save_to_db(dbconnection)
 
         # TODO → Controlar por tiempo (unos 5 min) en vez de posición
-        if n_lecturas == 2:
+        if n_lecturas == 1:
             n_lecturas = 0
 
             try:
                 upload_data_to_api(apiconnection, dbconnection)
-            except():
+            except ():
                 print('Error al subir datos a la api')
 
         # Muestro tiempo en realizarse la lectura de datos.
@@ -564,7 +569,7 @@ def loop():
         print('Tiempo de ejecución: ', str(tiempo_ejecucion))
 
         # Pausa entre cada lectura
-        sleep(40)
+        sleep(READ_INTERVAL)
 
     # Acciones tras terminar con error
     # TODO → controlar interrupciones y excepciones para limpiar/reiniciar todo.

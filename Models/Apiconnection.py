@@ -49,17 +49,17 @@
 # #       Importar Librerías        # #
 #######################################
 
+import time
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
+import requests
+import json
+import os
 import datetime
 
-## Cargo archivos de configuración desde .env
+# Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
 load_dotenv(override=True)
-import os
-import json
-import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
-import time
 
 #######################################
 # #             Variables           # #
@@ -74,6 +74,7 @@ sleep = time.sleep
 class Apiconnection:
     API_URL = os.getenv("API_URL")
     API_TOKEN = os.getenv("API_TOKEN")
+    DEVICE_ID = os.getenv("DEVICE_ID")
 
     def requests_retry_session(
             retries=3,
@@ -110,6 +111,7 @@ class Apiconnection:
 
         url = self.API_URL
         token = self.API_TOKEN
+        #hardware_device_id = self.DEVICE_ID
         full_url = url + path
 
         data = {
@@ -169,7 +171,10 @@ class Apiconnection:
                 if columns[iteracion] != 'id':
                     tupla.update({columns[iteracion]: cell})
 
+            tupla.update({'hardware_device_id': self.DEVICE_ID})
             result.append(tupla)
+
+
 
         return json.dumps(
             result,

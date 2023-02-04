@@ -58,7 +58,8 @@ class VEML6075(AbstractModel):
 
     def __init__(self, integration_time=100):
         i2c = busio.I2C(board.SCL, board.SDA)
-        self.sensor = adafruit_veml6075.VEML6075(i2c, integration_time=integration_time)
+        self.sensor = adafruit_veml6075.VEML6075(
+            i2c, integration_time=integration_time)
 
     def get_uv_index(self):
         """
@@ -66,6 +67,7 @@ class VEML6075(AbstractModel):
         :return: Devuelve el índice UV.
         """
         value = self.sensor.uv_index
+
         return value if value >= 0.0 else 0.0
 
     def get_uva(self):
@@ -74,6 +76,7 @@ class VEML6075(AbstractModel):
         :return: Devuelve el índice UVA.
         """
         value = self.sensor.uva
+
         return value if value >= 0.0 else 0.0
 
     def get_uvb(self):
@@ -82,6 +85,7 @@ class VEML6075(AbstractModel):
         :return: Devuelve el índice UVA.
         """
         value = self.sensor.uvb
+
         return value if value >= 0.0 else 0.0
 
     def get_all_datas(self):
