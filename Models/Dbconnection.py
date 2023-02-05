@@ -49,16 +49,16 @@
 # #       Importar Librerías        # #
 #######################################
 
+import os
 import datetime
 from sqlalchemy import create_engine, Table, Column, Integer, String, \
-                       MetaData, DateTime, Numeric, select, text
+    MetaData, DateTime, Numeric, select, text
 
 from sqlalchemy.orm import sessionmaker
 
-## Cargo archivos de configuración desde .env
+# Cargo archivos de configuración desde .env
 from dotenv import load_dotenv
 load_dotenv(override=True)
-import os
 
 
 class Dbconnection:
@@ -93,7 +93,8 @@ class Dbconnection:
         columns = []
 
         # Seteo la columna **id**
-        columns.append(Column('id', Integer, primary_key=True, autoincrement=True))
+        columns.append(
+            Column('id', Integer, primary_key=True, autoincrement=True))
 
         # Seteo el resto de columnas.
         for name, datas in parameters.items():
@@ -126,7 +127,8 @@ class Dbconnection:
 
         self.meta.create_all(self.engine)
 
-        print('Tablas en la DB: ', self.engine.table_names())
+        if self.has_debug:
+            print('Tablas en la DB: ', self.engine.table_names())
 
     def table_get_data(self, tablename):
         """
@@ -168,7 +170,8 @@ class Dbconnection:
 
         table = self.tables[tablename]
 
-        print('Guardando en DB: ', table, params)
+        if self.has_debug:
+            print('Guardando en DB: ', table, params)
 
         # Inserto Datos
         try:
@@ -176,7 +179,8 @@ class Dbconnection:
             result = self.connection.execute(stmt)
             # server_created_at = result.returned_defaults['created_at']
         except Exception as e:
-            print('Ha ocurrido un problema al insertar datos', e.__class__.__name__)
+            print('Ha ocurrido un problema al insertar datos',
+                  e.__class__.__name__)
             return None
 
     def table_truncate(self, tablename):
@@ -197,10 +201,10 @@ class Dbconnection:
         table = self.tables.get(tablename)
         session = self.Session()
 
-        ## Obtengo los últimos elementos para eliminarlos posteriormente.
+        # Obtengo los últimos elementos para eliminarlos posteriormente.
         lastData = self.table_get_data_last(tablename, limit)
 
-        ## Almaceno los ids de todos los resultados.
+        # Almaceno los ids de todos los resultados.
         ids = []
 
         for data in lastData:
@@ -237,5 +241,7 @@ class Dbconnection:
         trans.commit()
 
     def close_connection(self):
-        print('Cerrando conexión con la Base de Datos')
+        if self.has_debug:
+            print('Cerrando conexión con la Base de Datos')
+
         self.connection.close()

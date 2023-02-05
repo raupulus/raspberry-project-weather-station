@@ -512,7 +512,8 @@ def loop():
     while True:
         n_lecturas = n_lecturas + 1
 
-        print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
+        if DEBUG:
+            print('Lecturas de sensores desde la última subida: ' + str(n_lecturas))
 
         # Guardo el momento que inicia lectura.
         marca_inicio = datetime.datetime.now(tz=None)
@@ -536,12 +537,18 @@ def loop():
                 print('Error al subir datos a la api')
 
         # Muestro tiempo en realizarse la lectura de datos.
-        print('Inicio: ', str(marca_inicio))
+        if DEBUG:
+            print('Inicio: ', str(marca_inicio))
+
         marca_fin = datetime.datetime.now(tz=None)
-        print('Fin: ', str(marca_fin))
+
+        if DEBUG:
+            print('Fin: ', str(marca_fin))
 
         tiempo_ejecucion = marca_fin - marca_inicio
-        print('Tiempo de ejecución: ', str(tiempo_ejecucion))
+
+        if DEBUG:
+            print('Tiempo de ejecución: ', str(tiempo_ejecucion))
 
         # Pausa entre cada lectura
         sleep(READ_INTERVAL)

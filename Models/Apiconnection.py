@@ -179,8 +179,6 @@ class Apiconnection:
 
             tupla.update({'hardware_device_id': self.DEVICE_ID})
 
-            print(self.DEVICE_ID)
-
             result.append(tupla)
 
         return json.dumps(
