@@ -61,10 +61,10 @@ class VEML6075(AbstractModel):
     sensor = None
     sensorLight = None
 
-    def __init__(self, integration_time=100):
+    def __init__(self, integration_time=100, high_dynamic=True):
         i2c = busio.I2C(board.SCL, board.SDA)
         self.sensor = adafruit_veml6075.VEML6075(
-            i2c, integration_time=integration_time)
+            i2c, integration_time=integration_time, high_dynamic=high_dynamic)
 
         # TODO: Check if el sensor de luz está como True en el .env
         self.sensorsLight = BH1750()
@@ -92,29 +92,29 @@ class VEML6075(AbstractModel):
 
         value = self.sensorsLight.read_light()
 
-        return float(value) if value >= 0.0 else 0.0
+        return value if value >= 0.0 else 0.0
 
     def get_uv_index(self):
         """
         Obtiene el índice UV.
         :return: Devuelve el índice UV.
         """
-        sleep(0.12)
+        sleep(0.5)
 
         value = self.sensor.uv_index
 
-        return float(value) if value >= 0.0 else 0.0
+        return value if value >= 0.0 else 0.04
 
     def get_uva(self):
         """
         Obtiene el índice UVA.
         :return: Devuelve el índice UVA.
         """
-        sleep(0.12)
+        sleep(0.5)
 
         value = self.sensor.uva
 
-        return float(value) if value >= 0.0 else 0.0
+        return value if value >= 0.0 else 15
 
     def get_uvb(self):
         """
@@ -122,13 +122,11 @@ class VEML6075(AbstractModel):
         :return: Devuelve el índice UVA.
         """
 
-        sleep(0.12)
+        sleep(0.5)
 
         value = self.sensor.uvb
 
-        print('OOOOOOOODHJKDG FKHJDS GFHJK: ', value)
-
-        return value if value >= 0.0 else 0.0
+        return value if value >= 0.0 else 21
 
     def get_all_datas(self):
         """
@@ -136,11 +134,11 @@ class VEML6075(AbstractModel):
         :return:
         """
 
-        lux = self.get_lux()
-        lumens = self.get_lumens(lux)
         index = self.get_uv_index()
         uva = self.get_uva()
         uvb = self.get_uvb()
+        lux = self.get_lux()
+        lumens = self.get_lumens(lux)
 
         if lumens is None or index is None or uva is None or uvb is None or lux is None:
             return None

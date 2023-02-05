@@ -502,6 +502,8 @@ def upload_data_to_api(apiconnection, dbconnection):
             if DEBUG:
                 print('Error al subir a la api: ', name)
 
+        sleep(2)
+
 
 def loop():
     # Contador de lecturas desde la última subida a la API
