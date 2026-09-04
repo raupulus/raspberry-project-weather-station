@@ -2,12 +2,12 @@
 # -*- encoding: utf-8 -*-
 
 # @author     Raúl Caro Pastorino
-# @email      dev@fryntiz.es
-# @web        https://fryntiz.es
-# @gitlab     https://gitlab.com/fryntiz
-# @github     https://github.com/fryntiz
-# @twitter    https://twitter.com/fryntiz
-# @telegram   https://t.me/fryntiz
+# @email      public@raupulus.dev
+# @web        https://raupulus.dev
+# @gitlab     https://gitlab.com/raupulus
+# @github     https://github.com/raupulus
+# @twitter    https://twitter.com/raupulus
+# @telegram   https://t.me/raupulus_diffusion
 
 # Create Date: 2019/10/27
 # Project Name:

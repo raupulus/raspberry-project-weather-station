@@ -122,7 +122,7 @@ es inconveniente mientras existan permisos adecuados para el usuario.
 ```bash
 mkdir /home/pi/git
 cd /home/pi/git
-git clone https://gitlab.com/fryntiz/raspberry-weather-station.git
+git clone https://gitlab.com/raupulus/raspberry-weather-station.git
 ```
 
 ### Instalar dependencias
